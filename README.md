@@ -36,17 +36,19 @@ Phases of Development
 
 1) Communications
 	
-	Audit Servers should be able to communicate to eachother through BitMessage, and should also be able
-	to communicate with OT Servers.	
+	Audit Servers should be able to communicate to eachother through BitMessage, 
+	and should also be able to communicate with OT Servers.	
 
 2) Funds
 	
-	Audit Servers should be able to process test funds, Deposits/Withdrawals. They should be able to communicate
-	the status of these funds to other Audit servers in the pool.
+	Audit Servers should be able to process test funds, Deposits/Withdrawals. 
+	They should be able to communicate the status of these funds to other 
+	Audit servers in the pool.
 
 3) Pool Integrity
 
-	The integrity of the pool should be able to be tested by removing Audit servers and OT servers at-will.
+	The integrity of the pool should be able to be tested by removing Audit 
+	servers and OT servers at-will.
 
 4) Bitcoin Integration
 
@@ -71,6 +73,9 @@ Actions
 * Removing Members
 * Replacing Members
 
+
+Known Issues
+=======
 
 
 Definitions
