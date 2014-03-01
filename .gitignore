@@ -2,18 +2,24 @@
 *.slo
 *.lo
 *.o
+*.obj
 
 # Compiled Dynamic libraries
 *.so
 *.dylib
+*.dll
 
 # Compiled Static libraries
 *.lai
 *.la
 *.a
+*.lib
 
 # Scons DB
 .sconsign.dblite
 
-# binaries
+# Executables
 auditor
+*.exe
+*.out
+*.app
