@@ -1,6 +1,8 @@
 Auditor
 =======
 
+#### The code in this repository is subject to rolling changes.
+
 Withdrawals
 =======
 
@@ -36,7 +38,7 @@ Phases of Development
 
 1) Communications
 	
-	Audit Servers should be able to communicate to eachother through BitMessage, 
+	Audit Servers should be able to communicate to eachother through BitMessage (optional),
 	and should also be able to communicate with OT Servers.	
 
 2) Funds
@@ -50,9 +52,7 @@ Phases of Development
 	The integrity of the pool should be able to be tested by removing Audit 
 	servers and OT servers at-will.
 
-4) Bitcoin Integration
-
-	Communication with the Bitcoin Blockchain.
+4) ...
 
 
 
@@ -83,10 +83,10 @@ Definitions
 
 * Funds - 
 
-* Pool - a group of independent Open-Transactions (OT) transaction servers who cooperate to store outputs 
+* Pool - A group of independent [Open-Transactions](http://opentransactions.org/) transaction servers who cooperate to store outputs
 	on the Bitcoin blockchain in order to provide full backing for bitcoin-denominated receipts.
 
-* Multisig - A type of bitcoin output script which uses OP_CHECKMULTISIG as described in BIP11.
+* Multisig - A type of bitcoin output script which uses OP_CHECKMULTISIG as described in [BIP11](https://github.com/bitcoin/bips/blob/master/bip-0011.mediawiki).
 
 * Inflation - 
 
@@ -94,12 +94,12 @@ Definitions
 Related Projects
 =======
 
-* ServerCore - https://github.com/monetas/ServerCore
-* Verifier - https://github.com/monetas/verifier
+* [ServerCore](https://github.com/monetas/ServerCore)
+* [Verifier](https://github.com/monetas/verifier)
 
 
 References
 =======
 
-* Voting Pools Whitepaper - https://docs.google.com/a/monetas.net/document/d/1aS4v4SlvwthYKo2xrAohlqZ9CqcA-9AL4atqq8P_O4c/edit?pli=1
+* [Voting Pools Whitepaper](https://docs.google.com/a/monetas.net/document/d/1aS4v4SlvwthYKo2xrAohlqZ9CqcA-9AL4atqq8P_O4c/edit?pli=1)
 
