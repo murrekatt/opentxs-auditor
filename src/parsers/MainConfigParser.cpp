@@ -5,7 +5,7 @@
 
 
 #include "MainConfigParser.h"
-#include "Constants.h"
+#include "constants.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/progress.hpp>

@@ -11,3 +11,9 @@
 *.lai
 *.la
 *.a
+
+# Scons DB
+.sconsign.dblite
+
+# binaries
+auditor
