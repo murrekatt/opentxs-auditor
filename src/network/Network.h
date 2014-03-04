@@ -8,9 +8,8 @@ class NetworkModule {
     
 public:
     
-    virtual ~NetworkModule();
-    
-    virtual bool verify();
+    NetworkModule(){};
+    virtual bool verify(){ return true;};
         
 private:
     
