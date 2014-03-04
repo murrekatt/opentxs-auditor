@@ -29,48 +29,46 @@ bool MainConfigParser::parse(){
         ("version,v", "display version number")
         ;
         
-        po::options_description config("Config File Options");
-        config.add_options()
-     /*   ("dbhost", po::value<std::string>(&db_hostname)->default_value("localhost"),"Database Hostname")
-        ("dbport", po::value<int>(&db_port)->default_value(5432), "Database Port")
-        ("dbuser", po::value<std::string>(&db_username), "Database Username")
-        ("dbpass", po::value<std::string>(&db_pass), "Database Password")
-        ("dbname", po::value<std::string>(&db_name)->default_value(db_username), "Database Name") */
-        ;
-        
-        
-        po::options_description hidden("Hidden options");
-        hidden.add_options()
-      /*  ("server_port", po::value<int>(&serverPort)->default_value(5250), "Server Listening Port") */
+        po::options_description network("Network options");
+        network.add_options()
+        ("network.netmodule", po::value<std::string>(&netmodule)->default_value("bitmessage"),"Net Communication Module")
+        ("network.bitmessage.remotehost", po::value<std::string>(&remote_bitmessagehost)->default_value("localhost"), "Remote Bitmessage API Host")
+        ("network.bitmessage.remoteport", po::value<int>(&remote_bitmessageport)->default_value(8442), "Remote Bitmessage API server port")
+        ("network.bitmessage.remoteuser", po::value<std::string>(&remote_bitmessageuser)->default_value("defaultuser"), "Remote Bitmessage API Username")
+        ("network.bitmessage.remotepass", po::value<std::string>(&remote_bitmessagepass)->default_value("defaultpass"), "Remote Bitmessage API Password")
         ;
         
         
         po::options_description config_file_options;
-        config_file_options.add(config).add(hidden);
+        config_file_options.add(network);
         
         po::variables_map vm;
+    
+        //  Parse our command line options
         po::store(po::parse_command_line(argc, argv, desc), vm);
         po::notify(vm);
         
         if (vm.count("help")) {
+            std::cout << g_versionString << std::endl;
             std::cout << desc << std::endl;
-            std::cout << config << std::endl;
+            std::cout << network << std::endl;
             exit(0);
         }
         if (vm.count("version")) {
-            std::cout << "VP Auditor 0.0.0" << std::endl;
+            std::cout << g_versionString << std::endl;
             exit(0);
         }
         
+        
+        // Now Parse our config file
         
         std::ifstream ifs(configpath.c_str());
         if(!ifs)
         {
-            std::cout << versiontext << std::endl;
+            std::cout << g_versionString << std::endl;
             std::cout << std::endl;
             //std::cout << "Usage:" << std::endl;
             std::cout << desc << std::endl;
-            std::cout << config << std::endl;
             std::cout << std::endl;
             std::cout << "Error: could not open config file \"" << configpath << "\"" << std::endl;
 

@@ -21,6 +21,9 @@ env.Append(LIBS = ['xmlrpc_client++','boost_system','boost_program_options'])
 sources = Split("""
 src/main.cpp
 src/parsers/MainConfigParser.cpp
+src/network/Network.cpp
+src/network/Bitmessage.cpp
+src/network/XmlRPC.cpp
 """)
 
 object_list = env.Object(source = sources)

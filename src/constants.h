@@ -7,5 +7,5 @@
 
 #include <string>
 
-const std::string versiontext("Auditor 0.0.0");
+const std::string g_versionString("Auditor 0.0.0");
 

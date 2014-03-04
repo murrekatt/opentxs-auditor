@@ -15,9 +15,18 @@ public:
     
 private:
     
-    std::string configpath;
     int argc;
     char** argv;
+    
+    std::string configpath;
+    
+    // Network
+    std::string netmodule;
+    int remote_bitmessageport;
+    std::string remote_bitmessagehost;
+    std::string remote_bitmessageuser;
+    std::string remote_bitmessagepass;
+
 
     
     
