@@ -15,7 +15,7 @@ public:
     
     BitMessage(std::string Host, int Port, std::string Username, std::string Pass) : m_host(Host), m_port(Port), m_username(Username), m_pass(Pass) {};
     
-    bool verify();
+    bool testApi();
     void setTimeout(int timeout);
     
 private:

@@ -22,7 +22,13 @@ int main(int argc, char * argv[])
         // Echo to BitMessage (or other communication layer) Network
     
     NetworkModule *netModule = mainConfigParser.passNetworkModule();
-    netModule->verify();
+    if(netModule->testApi()){
+        std::cout << "Transport Layer is Accessible" << std::endl;
+    }
+    else{
+        std::cout << "Transport Layer Failure" << std::endl;
+        exit(0);
+    }
     
 }
 

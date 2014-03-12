@@ -10,7 +10,7 @@ class NetworkModule {
 public:
     
     NetworkModule(){};
-    virtual bool verify(){ return true;};
+    virtual bool testApi(){ return true;};
         
 private:
     

@@ -6,11 +6,14 @@
 #include <cstdlib>
 #include <string>
 #include <iostream>
+#include <vector>
+#include <utility>
 
 #include <xmlrpc-c/girerr.hpp>
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/client.hpp>
 
+typedef std::pair<bool, std::string> xmlresponse;
 
 class XmlRPC {
     
@@ -19,7 +22,7 @@ public:
     XmlRPC(std::string serverurl, int port=80, bool authrequired=false, int Timeout=10000);
     ~XmlRPC(){};
     
-    bool run(std::string user, std::string pass);
+    std::pair<bool, std::string> run(std::string methodName, std::vector<xmlrpc_c::value> parameters);
     void setTimeout(int Timeout);
     void setAuth(std::string user, std::string pass);
     void toggleAuth(bool toggle);
