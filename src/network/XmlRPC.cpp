@@ -28,7 +28,7 @@ bool XmlRPC::run(){
         std::string const serverUrl("http://localhost:8442");
         
         xmlrpc_c::carriageParm_http0 myCarriageParm(serverUrl);
-        myCarriageParm.setUser("testuser", "testpass");
+        myCarriageParm.setUser("", "");
         myCarriageParm.allowAuthBasic();
         
         myRpcP->call(&myClient, &myCarriageParm);

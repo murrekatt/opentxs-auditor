@@ -1,3 +1,4 @@
+#pragma once
 //
 //  MainConfigParser.h
 //  Auditor
@@ -5,6 +6,9 @@
 
 
 #include <string>
+#include <memory>
+
+#include "Network.h"
 
 class MainConfigParser {
     
@@ -13,7 +17,13 @@ public:
     
     bool parse();
     
+    
+    // Object Passing Functions
+    NetworkModule* passNetworkModule();
+    
 private:
+    
+    // Variables
     
     int argc;
     char** argv;
@@ -21,14 +31,19 @@ private:
     std::string configpath;
     
     // Network
-    std::string netmodule;
+    //std::string m_netmodule;
     int remote_bitmessageport;
     std::string remote_bitmessagehost;
     std::string remote_bitmessageuser;
     std::string remote_bitmessagepass;
-
-
     
+    
+    // Smart Pointer Objects
+    std::shared_ptr<NetworkModule> m_netmodule;
+
+
+    // CallBack Functions
+    void setNetworkModule(std::string const module);
     
 };
 

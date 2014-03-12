@@ -6,13 +6,20 @@
 
 #include "MainConfigParser.h"
 #include "constants.h"
+#include "BitMessage.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/progress.hpp>
 #include <boost/program_options.hpp>
+#include <boost/bind.hpp>
 
 #include <iostream>
 #include <fstream>
+#include <functional>
+#include <algorithm>
+#include <locale>
+
+
 
 namespace po = boost::program_options;
 
@@ -31,7 +38,7 @@ bool MainConfigParser::parse(){
         
         po::options_description network("Network options");
         network.add_options()
-        ("network.netmodule", po::value<std::string>(&netmodule)->default_value("bitmessage"),"Net Communication Module")
+        ("network.netmodule", po::value<std::string>()->default_value("bitmessage")->notifier(boost::bind(&MainConfigParser::setNetworkModule, this, _1)),"Net Communication Module")
         ("network.bitmessage.remotehost", po::value<std::string>(&remote_bitmessagehost)->default_value("localhost"), "Remote Bitmessage API Host")
         ("network.bitmessage.remoteport", po::value<int>(&remote_bitmessageport)->default_value(8442), "Remote Bitmessage API server port")
         ("network.bitmessage.remoteuser", po::value<std::string>(&remote_bitmessageuser)->default_value("defaultuser"), "Remote Bitmessage API Username")
@@ -92,4 +99,36 @@ bool MainConfigParser::parse(){
         return false;
     }
     return true;
+}
+
+
+
+
+
+void MainConfigParser::setNetworkModule(std::string const module){
+    
+    std::string netmodule = module;
+    
+    // Convert to lower case, take into account locale (will construct a locale object representing your preferred locale)
+    std::transform(netmodule.begin(), netmodule.end(), netmodule.begin(), std::bind2nd(std::ptr_fun(&std::tolower<char>), std::locale("")));
+    
+    std::cout << "Network Module: " << netmodule << std::endl;
+    
+    if(netmodule == "bitmessage"){
+        m_netmodule = std::shared_ptr<BitMessage>(new BitMessage(remote_bitmessagehost, remote_bitmessageport, remote_bitmessageuser, remote_bitmessagepass));
+        
+    }
+    else{
+        std::cout << std::endl << "Unable to initialize Network Module: \"" << netmodule << "\"" << std::endl;
+        std::cout << "Has it been configured properly?" << std::endl << std::endl;
+    }
+    
+}
+
+
+
+NetworkModule* MainConfigParser::passNetworkModule(){
+    
+    return m_netmodule.get();
+    
 }
