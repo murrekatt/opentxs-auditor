@@ -7,39 +7,47 @@
 
 #include <string>
 
+
+XmlRPC::XmlRPC(std::string serverurl, int port, bool authrequired, int Timeout) : m_serverurl(serverurl), m_port(port), m_authrequired(authrequired), m_timeout(Timeout) {
+    
+    xmlrpc_c::clientXmlTransport_curl transport(
+                                                xmlrpc_c::clientXmlTransport_curl::constrOpt()
+                                                .timeout(m_timeout)  // milliseconds
+                                                );
+    
+}
+
+
+
 bool XmlRPC::run(std::string user, std::string pass ){
     
     try {
         
-        xmlrpc_c::clientXmlTransport_curl myTransport(
-                                                      xmlrpc_c::clientXmlTransport_curl::constrOpt()
-                                                      .timeout(10000)  // milliseconds
-                                                      );
+        xmlrpc_c::client_xml client(&transport);
         
-        xmlrpc_c::client_xml myClient(&myTransport);
+        std::string const method("helloWorld");
         
-        std::string const methodName("helloWorld");
+        xmlrpc_c::paramList params;
+        params.add(xmlrpc_c::value_string("Hello"));
+        params.add(xmlrpc_c::value_string("Auditor"));
         
-        xmlrpc_c::paramList sampleAddParms;
-        sampleAddParms.add(xmlrpc_c::value_string("Hello"));
-        sampleAddParms.add(xmlrpc_c::value_string("Auditor"));
+        xmlrpc_c::rpcPtr rpc(method, params);
         
-        xmlrpc_c::rpcPtr myRpcP(methodName, sampleAddParms);
+        std::string const serverUrl(m_serverurl + ":" + std::to_string(m_port));
         
-        std::string const serverUrl("http://localhost:8442");
+        xmlrpc_c::carriageParm_http0 carriageParams(serverUrl);
         
-        xmlrpc_c::carriageParm_http0 myCarriageParm(serverUrl);
-        myCarriageParm.setUser(user, pass);
-        myCarriageParm.allowAuthBasic();
         
-        myRpcP->call(&myClient, &myCarriageParm);
+        carriageParams.setUser(user, pass);
+        carriageParams.allowAuthBasic();
         
-        assert(myRpcP->isFinished());
+        rpc->call(&client, &carriageParams);
         
-        std::string const sum(xmlrpc_c::value_string(myRpcP->getResult()));
-        // Assume the method returned an integer; throws error if not
+        assert(rpc ->isFinished());
         
-        std::cout << "\nResponse is: " << sum << std::endl;
+        std::string const result(xmlrpc_c::value_string(rpc->getResult()));
+        
+        std::cout << "\nResponse is: " << result << std::endl;
         
     } catch (std::exception const& e) {
         std::cerr << "Client threw error: " << e.what() << std::endl;
@@ -51,6 +59,29 @@ bool XmlRPC::run(std::string user, std::string pass ){
     
     return true;
     
+}
 
+
+
+void XmlRPC::setTimeout(int Timeout){
     
+    m_timeout = Timeout;
+    
+    xmlrpc_c::clientXmlTransport_curl transport(
+                                                xmlrpc_c::clientXmlTransport_curl::constrOpt()
+                                                .timeout(m_timeout)  // milliseconds
+                                                );
+}
+
+
+void XmlRPC::setAuth(std::string user, std::string pass){
+    
+    m_authuser = user;
+    m_authpass = pass;
+    
+}
+
+
+void XmlRPC::toggleAuth(bool toggle){
+    m_authrequired = toggle;
 }

@@ -16,13 +16,27 @@ class XmlRPC {
     
 public:
     
-    XmlRPC(){};
+    XmlRPC(std::string serverurl, int port=80, bool authrequired=false, int Timeout=10000);
     ~XmlRPC(){};
     
     bool run(std::string user, std::string pass);
+    void setTimeout(int Timeout);
+    void setAuth(std::string user, std::string pass);
+    void toggleAuth(bool toggle);
     
 private:
     
+    int m_timeout;
+    std::string m_serverurl;
+    int m_port;
+    
+    bool m_authrequired;
+    bool m_authset;
+    
+    std::string m_authuser;
+    std::string m_authpass;
+    
+    xmlrpc_c::clientXmlTransport_curl transport;
     
     
 };
