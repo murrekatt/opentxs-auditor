@@ -28,18 +28,20 @@ public:
     void toggleAuth(bool toggle);
     
 private:
-    
-    int m_timeout;
+
+    // Address Settings
     std::string m_serverurl;
     int m_port;
     
+    // Transport Settings
+    int m_timeout;
+    xmlrpc_c::clientXmlTransport_curl transport;
+
+    // Auth Variables
     bool m_authrequired;
     bool m_authset;
     
     std::string m_authuser;
     std::string m_authpass;
-    
-    xmlrpc_c::clientXmlTransport_curl transport;
-    
     
 };
