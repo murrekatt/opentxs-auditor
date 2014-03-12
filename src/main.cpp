@@ -5,8 +5,11 @@
 
 
 #include <iostream>
+#include <string>
 #include "MainConfigParser.h"
 #include "Network.h"
+
+#include "base64.h"
 
 int main(int argc, char * argv[])
 {
@@ -30,6 +33,13 @@ int main(int argc, char * argv[])
         exit(0);
     }
     netModule->listAddresses();
+    
+    std::cout << "Base64 Test" << std::endl;
+    const std::string hello("Hello World");
+    std::string encoded = base64_encode((const unsigned char *)hello.c_str(), hello.size());
+    std::cout << encoded << std::endl;
+    std::cout << base64_decode(encoded) << std::endl;
+    
     
 }
 

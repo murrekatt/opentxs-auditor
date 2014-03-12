@@ -4,6 +4,7 @@
 
 #include "BitMessage.h"
 #include "json/json.h"
+#include "base64.h"
 
 #include <string>
 #include <iostream>

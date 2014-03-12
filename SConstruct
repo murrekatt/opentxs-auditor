@@ -13,7 +13,7 @@ env = Environment()
 env.ParseConfig( 'xmlrpc-c-config c++2 --cflags --libs' )
 env.Append(CPPPATH = ['/usr/local/include/','src','src/crypto','src/parsers','src/parsers/jsoncpp','src/network'])
 env.Append(LIBPATH = ['/usr/local/lib/'])
-env.Append(LIBS = ['xmlrpc_client++','boost_system','boost_program_options','cryptopp'])
+env.Append(LIBS = ['xmlrpc_client++','boost_system','boost_program_options'])
 
 
 # This will be split apart as this project grows, for now this single scons file suffices.
