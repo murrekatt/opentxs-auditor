@@ -45,14 +45,16 @@ bool BitMessage::testApi(){
 }
 
 
-std::string BitMessage::listAddresses(){
+std::vector<std::string> BitMessage::listAddresses(){
     
     std::vector<xmlrpc_c::value> params;
-    XmlResponse result = m_xmllib->run("listAddresses2", params);
+    std::vector<std::string> responses;
     
+    XmlResponse result = m_xmllib->run("listAddresses2", params);
+
     if(result.first == false){
         std::cout << "Error: listAddresses2 failed" << std::endl;
-        return " ";
+        return responses;
     }
     else{
         
@@ -64,11 +66,14 @@ std::string BitMessage::listAddresses(){
         {
             // report to the user the failure and their locations in the document.
             std::cout  << "Failed to parse configuration\n" << reader.getFormattedErrorMessages();
-            return " ";
+            return responses;
         }
         
         const Json::Value addresses = root["addresses"];
         for ( int index = 0; index < addresses.size(); ++index ){  // Iterates over the sequence elements.
+            responses.push_back(addresses[index].get("address", "").asString());
+
+            // Debug Output
             std::cout << std::endl;
             std::cout <<  "Address Index: " << index << std::endl;
             std::cout <<  "chan: " << addresses[index].get("chan", false).asBool() << std::endl;
@@ -81,7 +86,7 @@ std::string BitMessage::listAddresses(){
 
         std::cout << "BitMessage API Response: " << result.second << std::endl;
     }
-    return result.second;
+    return responses;
     
 }
 

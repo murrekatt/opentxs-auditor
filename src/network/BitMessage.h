@@ -19,7 +19,7 @@ public:
     // Core API Functions
     bool testApi();
     int add(int x, int y);
-    std::string listAddresses(); // This is technically "listAddresses2" in the API reference
+    std::vector<std::string> listAddresses(); // This is technically "listAddresses2" in the API reference
     
     // Not yet implemented Functions
     // https://bitmessage.org/wiki/API_Reference
