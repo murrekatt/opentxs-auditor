@@ -23,7 +23,6 @@ int main(int argc, char * argv[])
     
     NetworkModule *netModule = mainConfigParser.passNetworkModule();
     netModule->verify();
-        // https://bitmessage.org/wiki/API_Reference
-    // Receive Hello from transaction server intended for Audit Server (Bitmessage message?)
+    
 }
 

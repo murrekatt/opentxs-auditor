@@ -5,15 +5,16 @@
 
 #include "XmlRPC.h"
 
+#include <string>
 
-bool XmlRPC::run(){
+bool XmlRPC::run(std::string user, std::string pass ){
     
     try {
         
         xmlrpc_c::clientXmlTransport_curl myTransport(
                                                       xmlrpc_c::clientXmlTransport_curl::constrOpt()
                                                       .timeout(10000)  // milliseconds
-                                                      .user_agent("sample_add/1.0"));
+                                                      );
         
         xmlrpc_c::client_xml myClient(&myTransport);
         
@@ -28,7 +29,7 @@ bool XmlRPC::run(){
         std::string const serverUrl("http://localhost:8442");
         
         xmlrpc_c::carriageParm_http0 myCarriageParm(serverUrl);
-        myCarriageParm.setUser("", "");
+        myCarriageParm.setUser(user, pass);
         myCarriageParm.allowAuthBasic();
         
         myRpcP->call(&myClient, &myCarriageParm);

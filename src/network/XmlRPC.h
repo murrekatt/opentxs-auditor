@@ -19,7 +19,7 @@ public:
     XmlRPC(){};
     ~XmlRPC(){};
     
-    bool run();
+    bool run(std::string user, std::string pass);
     
 private:
     
