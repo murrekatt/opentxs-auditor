@@ -104,7 +104,6 @@ bool MainConfigParser::parse(){
 
 
 
-
 void MainConfigParser::setNetworkModule(std::string const module){
     
     std::string netmodule = module;

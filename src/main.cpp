@@ -29,6 +29,7 @@ int main(int argc, char * argv[])
         std::cout << "Transport Layer Failure" << std::endl;
         exit(0);
     }
+    netModule->listAddresses();
     
 }
 

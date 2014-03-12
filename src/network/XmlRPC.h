@@ -13,7 +13,7 @@
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/client.hpp>
 
-typedef std::pair<bool, std::string> xmlresponse;
+typedef std::pair<bool, std::string> XmlResponse;
 
 class XmlRPC {
     

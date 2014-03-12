@@ -13,9 +13,44 @@ class BitMessage : public NetworkModule {
     
 public:
     
-    BitMessage(std::string Host, int Port, std::string Username, std::string Pass) : m_host(Host), m_port(Port), m_username(Username), m_pass(Pass) {};
+    BitMessage(std::string Host, int Port, std::string Username, std::string Pass);
+    ~BitMessage();
     
+    // Core API Functions
     bool testApi();
+    int add(int x, int y);
+    std::vector<std::string> listAddresses(); // This is technically "listAddresses2" in the API reference
+    
+    // Not yet implemented Functions
+    // https://bitmessage.org/wiki/API_Reference
+    void createRandomAddress();
+    void createDeterministicAddresses();
+    void getDeterministicAddress();
+    void getAllInboxMessages();
+    void getInboxMessageByID();
+    void getSentMessageByAckData();
+    void getAllSentMessages();
+    void getSentMessageByID();
+    void getSentMessagesBySender();
+    void trashMessage();
+    void sendMessage();
+    void sendBroadcast();
+    void getStatus();
+    void listSubscriptions();
+    void addSubscription();
+    void deleteSubscription();
+    void listAddressBookEntries();
+    void addAddressBookEntry();
+    void deleteAddressBookEntry();
+    void trashSentMessageByAckData();
+    void createChan();
+    void joinChan();
+    void leaveChan();
+    void deleteAddress();
+    void decodeAddress();
+    
+    
+    // Extra BitMessage Options (some of these are pass-through functions)
     void setTimeout(int timeout);
     
 private:
@@ -28,7 +63,7 @@ private:
     
     
     // Communication Library, XmlRPC in this case
-    std::shared_ptr<XmlRPC> m_xmllib;
+    XmlRPC *m_xmllib;
     
     
     
