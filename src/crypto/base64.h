@@ -1,10 +1,10 @@
+#pragma once
 //
 //  base64.h
 //
 
 
 #include <string>
-#include <iostream>
 
 
 class base64 {

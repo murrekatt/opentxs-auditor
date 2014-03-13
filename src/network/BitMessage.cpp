@@ -25,31 +25,12 @@ BitMessage::~BitMessage(){
 }
 
 
-bool BitMessage::testApi(){
-    
-    std::vector<xmlrpc_c::value> params;
-    params.push_back(xmlrpc_c::value_string("Hello"));
-    params.push_back(xmlrpc_c::value_string("Auditor"));
-    
-    XmlResponse result = m_xmllib->run("helloWorld", params);
-    
-    if(result.first == false){
-        std::cout << "Error Accessing BitMessage API" << std::endl;
-        return false;
-    }
-    else{
-        std::cout << "BitMessage API Response: " << result.second << std::endl;
-    }
-    
-    return true;
-    
-}
 
 
-std::vector<std::string> BitMessage::listAddresses(){
+std::vector<BitMessageAddress> BitMessage::listAddresses(){
     
     std::vector<xmlrpc_c::value> params;
-    std::vector<std::string> responses;
+    std::vector<BitMessageAddress> responses;
     
     XmlResponse result = m_xmllib->run("listAddresses2", params);
 
@@ -59,33 +40,41 @@ std::vector<std::string> BitMessage::listAddresses(){
     }
     else{
         
-        Json::Value root;   // will contains the root value after parsing.
+        Json::Value root;
         Json::Reader reader;
         
-        bool parsesuccess = reader.parse( result.second, root );
+        bool parsesuccess = reader.parse( ValueString(result.second), root );
         if ( !parsesuccess )
         {
-            // report to the user the failure and their locations in the document.
             std::cout  << "Failed to parse configuration\n" << reader.getFormattedErrorMessages();
             return responses;
         }
         
         const Json::Value addresses = root["addresses"];
         for ( int index = 0; index < addresses.size(); ++index ){  // Iterates over the sequence elements.
-            responses.push_back(addresses[index].get("address", "").asString());
+            BitMessageAddress entry(base64(addresses[index].get("label", "").asString()), addresses[index].get("address", "").asString(), addresses[index].get("stream", 0).asInt(), addresses[index].get("enabled", false).asBool(), addresses[index].get("chan", false).asBool());
+            
+            responses.push_back(entry);
 
             // Debug Output
             std::cout << std::endl;
             std::cout <<  "Address Index: " << index << std::endl;
-            std::cout <<  "chan: " << addresses[index].get("chan", false).asBool() << std::endl;
-            std::cout <<  "address: " << addresses[index].get("address", "").asString() << std::endl;
-            std::cout <<  "enabled: " << addresses[index].get("enabled", false).asBool() << std::endl;
-            std::cout <<  "stream: " << addresses[index].get("stream", 0).asInt() << std::endl;
-            std::cout <<  "label: " << addresses[index].get("label", 0).asString() << std::endl;
             
+            std::string label;
+            label = responses.at(index).getLabel().decoded();
+            label.erase(label.find_last_not_of(" \n\r\t")+1);
+            std::cout <<  "label: " << label << std::endl;
+            
+            std::cout <<  "address: " << responses.at(index).getAddress() << std::endl;
+            std::cout <<  "stream: " << responses.at(index).getStream() << std::endl;
+            std::cout <<  "enabled: " << responses.at(index).getEnabled() << std::endl;
+            std::cout <<  "chan: " << responses.at(index).getChan() << std::endl;
+            std::cout << std::endl;
+
+
         }
 
-        std::cout << "BitMessage API Response: " << result.second << std::endl;
+        std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
     }
     return responses;
     
@@ -93,29 +82,109 @@ std::vector<std::string> BitMessage::listAddresses(){
 
 
 
-void BitMessage::createRandomAddress(){};
-void BitMessage::createDeterministicAddresses(){};
-void BitMessage::getDeterministicAddress(){};
+// Inbox Management
+
 void BitMessage::getAllInboxMessages(){};
-void BitMessage::getInboxMessageByID(){};
-void BitMessage::getSentMessageByAckData(){};
+
+void BitMessage::getInboxMessageByID(std::string msgID, bool setRead){};
+
+void BitMessage::getSentMessageByAckData(std::string ackData){};
+
 void BitMessage::getAllSentMessages(){};
-void BitMessage::getSentMessageByID(){};
-void BitMessage::getSentMessagesBySender(){};
-void BitMessage::trashMessage(){};
-void BitMessage::sendMessage(){};
-void BitMessage::sendBroadcast(){};
-void BitMessage::getStatus(){};
+
+void BitMessage::getSentMessageByID(std::string msgID){};
+
+void BitMessage::getSentMessagesBySender(BitMessageAddress address){};
+
+void BitMessage::trashMessage(std::string msgID){};
+
+void BitMessage::trashSentMessageByAckData(std::string ackData){};
+
+// Message Management
+
+void BitMessage::sendMessage(BitMessageAddress fromAddress, BitMessageAddress toAddress, base64 subject, base64 message, int encodingType){};
+
+void BitMessage::sendBroadcast(BitMessageAddress fromAddress, base64 subject, base64 message, int encodingType){};
+
+// Subscription Management
+
 void BitMessage::listSubscriptions(){};
-void BitMessage::addSubscription(){};
-void BitMessage::deleteSubscription(){};
+
+void BitMessage::addSubscription(BitMessageAddress address, base64 label){};
+
+void BitMessage::deleteSubscription(BitMessageAddress address){};
+
+
+// Channel Management
+
+void BitMessage::createChan(base64 password){};
+
+void BitMessage::joinChan(base64 password, BitMessageAddress address){};
+
+void BitMessage::leaveChan(BitMessageAddress address){};
+
+
+// Address Management
+
+void BitMessage::createRandomAddress(base64 label, bool eighteenByteRipe, int totalDifficulty, int smallMessageDifficulty){};
+
+void BitMessage::createDeterministicAddresses(base64 password, int numberOfAddresses, int addressVersionNumber, int streamNumber, bool eighteenByteRipe, int totalDifficulty, int smallMessageDifficulty){};
+
+void BitMessage::getDeterministicAddress(base64 password, int addressVersionNumber, int streamNumber){};
+
 void BitMessage::listAddressBookEntries(){};
-void BitMessage::addAddressBookEntry(){};
-void BitMessage::deleteAddressBookEntry(){};
-void BitMessage::trashSentMessageByAckData(){};
-void BitMessage::createChan(){};
-void BitMessage::joinChan(){};
-void BitMessage::leaveChan(){};
-void BitMessage::deleteAddress(){};
-void BitMessage::decodeAddress(){};
+
+void BitMessage::addAddressBookEntry(BitMessageAddress address, base64 label){};
+
+void BitMessage::deleteAddressBookEntry(BitMessageAddress address){};
+
+void BitMessage::deleteAddress(BitMessageAddress address){};
+
+void BitMessage::decodeAddress(BitMessageAddress address){};
+
+
+
+// Other API Commands
+
+bool BitMessage::testApi(){
+    
+    Parameters params;
+    params.push_back(ValueString("Hello"));
+    params.push_back(ValueString("Auditor"));
+    
+    XmlResponse result = m_xmllib->run("helloWorld", params);
+    
+    if(result.first == false){
+        std::cout << "Error Accessing BitMessage API" << std::endl;
+        return false;
+    }
+    else{
+        std::cout << "BitMessage API is Active: " << std::string(ValueString(result.second)) << std::endl;
+    }
+    
+    return true;
+    
+}
+
+int BitMessage::add(int x, int y){
+
+    Parameters params;
+    params.push_back(ValueInt(x));
+    params.push_back(ValueInt(y));
+    
+    XmlResponse result = m_xmllib->run("add", params);
+    
+    if(result.first == false){
+        std::cout << "Error: add failed" << std::endl;
+        return -1;
+    }
+    else{
+        return ValueInt(result.second);
+
+    }
+    
+};
+
+void BitMessage::getStatus(){};
+
 

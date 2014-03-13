@@ -8,6 +8,7 @@
 #include <string>
 #include "MainConfigParser.h"
 #include "Network.h"
+#include "BitMessage.h"
 
 #include "base64.h"
 
@@ -32,8 +33,16 @@ int main(int argc, char * argv[])
         std::cout << "Transport Layer Failure" << std::endl;
         exit(0);
     }
-    netModule->listAddresses();
     
+    std::cout << "BitMessage listAddresses Test" << std::endl;
+    dynamic_cast<BitMessage*>(netModule)->listAddresses();
+    
+    std::cout << std::endl;
+    std::cout << "BitMessage add Test" << std::endl;
+    std::cout << dynamic_cast<BitMessage*>(netModule)->add(2, 3) << std::endl;
+
+    
+    std::cout << std::endl;
     std::cout << "Base64 Test" << std::endl;
     base64 message("Hello");
     std::cout << message.encoded() << std::endl;
@@ -46,5 +55,7 @@ int main(int argc, char * argv[])
     decoded << message;
     std::cout << decoded << std::endl;
 
+    
+    
 }
 
