@@ -12,8 +12,17 @@
 #include <xmlrpc-c/girerr.hpp>
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/client.hpp>
+#include <xmlrpc-c/timeout.hpp>
 
-typedef std::pair<bool, std::string> XmlResponse;
+#if MSVCRT
+#  define WIN32_LEAN_AND_MEAN
+#  include <windows.h>
+#  include <process.h>
+#else
+#  include <unistd.h>
+#endif
+
+typedef std::pair<bool, xmlrpc_c::value> XmlResponse;
 
 class XmlRPC {
     
@@ -22,24 +31,28 @@ public:
     XmlRPC(std::string serverurl, int port=80, bool authrequired=false, int Timeout=10000);
     ~XmlRPC(){};
     
-    std::pair<bool, std::string> run(std::string methodName, std::vector<xmlrpc_c::value> parameters);
+    XmlResponse run(std::string methodName, std::vector<xmlrpc_c::value> parameters);
     void setTimeout(int Timeout);
     void setAuth(std::string user, std::string pass);
     void toggleAuth(bool toggle);
     
 private:
-    
-    int m_timeout;
+
+    // Address Settings
     std::string m_serverurl;
     int m_port;
     
+    // Transport Settings
+    int m_timeout;
+    xmlrpc_c::clientXmlTransport_curl transport;
+
+    // Auth Variables
     bool m_authrequired;
     bool m_authset;
     
     std::string m_authuser;
     std::string m_authpass;
     
-    xmlrpc_c::clientXmlTransport_curl transport;
-    
+    void xmlrpc_millisecond_sleep(unsigned int const milliseconds);
     
 };
