@@ -40,6 +40,12 @@ int main(int argc, char * argv[])
     std::cout << std::endl;
     std::cout << "BitMessage add Test" << std::endl;
     std::cout << dynamic_cast<BitMessage*>(netModule)->add(2, 3) << std::endl;
+    
+    std::cout << std::endl;
+    std::cout << "BitMessage getAllInboxMessages Test" << std::endl;
+    dynamic_cast<BitMessage*>(netModule)->createChan(base64("passwordl"));
+    dynamic_cast<BitMessage*>(netModule)->leaveChan(BitMessageAddress(base64(""), "BM-2cTUFbCqKb5u1DkHNtWKYRNnLP4R6eNhQF"));
+
 
     
     std::cout << std::endl;

@@ -12,7 +12,7 @@ class BitMessageAddress {
     
 public:
     
-    BitMessageAddress(base64 label, std::string address, int stream, bool enabled=true, bool chan=false) : m_label(label), m_address(address), m_stream(stream), m_enabled(enabled), m_chan(chan) {};
+    BitMessageAddress(base64 label, std::string address, int stream=1, bool enabled=true, bool chan=false) : m_label(label), m_address(address), m_stream(stream), m_enabled(enabled), m_chan(chan) {};
     
     // Note "getLabel" returns a base64 formatted label, you will need to decode this object via base64::decoded
     base64 getLabel(){return m_label;};
@@ -45,8 +45,6 @@ public:
     //
 
     // Inbox Management
-    
-    std::vector<BitMessageAddress> listAddresses(); // This is technically "listAddresses2" in the API reference
     
     void getAllInboxMessages();
     
@@ -85,16 +83,18 @@ public:
     
     // Channel Management
     
-    void createChan(base64 password);
+    BitMessageAddress createChan(base64 password);
     void createChan(std::string password){createChan(base64(password));};
     
     void joinChan(base64 password, BitMessageAddress address);
     void joinChan(std::string password, BitMessageAddress address){joinChan(base64(password), address);};
     
-    void leaveChan(BitMessageAddress address);
+    bool leaveChan(BitMessageAddress address);
     
     
     // Address Management
+    
+    std::vector<BitMessageAddress> listAddresses(); // This is technically "listAddresses2" in the API reference
     
     void createRandomAddress(base64 label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
     void createRandomAddress(std::string label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){createRandomAddress(label, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);};
