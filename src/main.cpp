@@ -35,11 +35,16 @@ int main(int argc, char * argv[])
     netModule->listAddresses();
     
     std::cout << "Base64 Test" << std::endl;
-    const std::string hello("Hello World");
-    std::string encoded = base64_encode((const unsigned char *)hello.c_str(), hello.size());
-    std::cout << encoded << std::endl;
-    std::cout << base64_decode(encoded) << std::endl;
-    
-    
+    base64 message("Hello");
+    std::cout << message.encoded() << std::endl;
+    std::string decoded;
+    decoded << message;
+    std::cout << decoded << std::endl;
+    std::string world("World");
+    world >> message;
+    std::cout << message.encoded() << std::endl;
+    decoded << message;
+    std::cout << decoded << std::endl;
+
 }
 

@@ -91,3 +91,31 @@ std::vector<std::string> BitMessage::listAddresses(){
     
 }
 
+
+
+void BitMessage::createRandomAddress(){};
+void BitMessage::createDeterministicAddresses(){};
+void BitMessage::getDeterministicAddress(){};
+void BitMessage::getAllInboxMessages(){};
+void BitMessage::getInboxMessageByID(){};
+void BitMessage::getSentMessageByAckData(){};
+void BitMessage::getAllSentMessages(){};
+void BitMessage::getSentMessageByID(){};
+void BitMessage::getSentMessagesBySender(){};
+void BitMessage::trashMessage(){};
+void BitMessage::sendMessage(){};
+void BitMessage::sendBroadcast(){};
+void BitMessage::getStatus(){};
+void BitMessage::listSubscriptions(){};
+void BitMessage::addSubscription(){};
+void BitMessage::deleteSubscription(){};
+void BitMessage::listAddressBookEntries(){};
+void BitMessage::addAddressBookEntry(){};
+void BitMessage::deleteAddressBookEntry(){};
+void BitMessage::trashSentMessageByAckData(){};
+void BitMessage::createChan(){};
+void BitMessage::joinChan(){};
+void BitMessage::leaveChan(){};
+void BitMessage::deleteAddress(){};
+void BitMessage::decodeAddress(){};
+
