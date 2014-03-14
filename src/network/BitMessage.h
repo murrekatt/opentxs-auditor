@@ -107,12 +107,12 @@ public:
     
     void listAddressBookEntries();
     
-    void addAddressBookEntry(BitMessageAddress address, base64 label);
-    void addAddressBookEntry(BitMessageAddress address, std::string label){addAddressBookEntry(address, base64(label));};
+    bool addAddressBookEntry(BitMessageAddress address, base64 label);
+    bool addAddressBookEntry(BitMessageAddress address, std::string label){return addAddressBookEntry(address, base64(label));};
 
-    void deleteAddressBookEntry(BitMessageAddress address);
+    bool deleteAddressBookEntry(BitMessageAddress address);
     
-    void deleteAddress(BitMessageAddress address);
+    bool deleteAddress(BitMessageAddress address);
     
     void decodeAddress(BitMessageAddress address);
     
@@ -120,7 +120,9 @@ public:
     // Other API Commands
     
     bool testApi();
+    
     int add(int x, int y);
+    
     void getStatus();
     
     

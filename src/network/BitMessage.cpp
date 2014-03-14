@@ -215,11 +215,88 @@ void BitMessage::getDeterministicAddress(base64 password, int addressVersionNumb
 
 void BitMessage::listAddressBookEntries(){};
 
-void BitMessage::addAddressBookEntry(BitMessageAddress address, base64 label){};
+bool BitMessage::addAddressBookEntry(BitMessageAddress address, base64 label){
 
-void BitMessage::deleteAddressBookEntry(BitMessageAddress address){};
+    Parameters params;
+    params.push_back(ValueString(address.getAddress()));
+    params.push_back(ValueString(label.encoded()));
+    
+    XmlResponse result = m_xmllib->run("addAddressBookEntry", params);
+    
+    if(result.first == false){
+        std::cout << "Error: addAddressBookEntry failed" << std::endl;
+        return false;
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return false;
+        }
+    }
+    
+    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
+    
+    return true;
 
-void BitMessage::deleteAddress(BitMessageAddress address){};
+};
+
+
+
+bool BitMessage::deleteAddressBookEntry(BitMessageAddress address){
+
+    Parameters params;
+    params.push_back(ValueString(address.getAddress()));
+    
+    XmlResponse result = m_xmllib->run("deleteAddressBookEntry", params);
+    
+    if(result.first == false){
+        std::cout << "Error: deleteAddressBookEntry failed" << std::endl;
+        return false;
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return false;
+        }
+    }
+    
+    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
+    
+    return true;
+
+};
+
+
+
+bool BitMessage::deleteAddress(BitMessageAddress address){
+
+    Parameters params;
+    params.push_back(ValueString(address.getAddress()));
+    
+    XmlResponse result = m_xmllib->run("deleteAddress", params);
+    
+    if(result.first == false){
+        std::cout << "Error: deleteAddress failed" << std::endl;
+        return false;
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return false;
+        }
+    }
+    
+    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
+    
+    return true;
+
+};
 
 void BitMessage::decodeAddress(BitMessageAddress address){};
 
