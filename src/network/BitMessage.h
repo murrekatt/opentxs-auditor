@@ -31,6 +31,46 @@ private:
 };
 
 
+class BitInboxMessage {
+
+public:
+    
+    BitInboxMessage(std::string msgID, std::string toAddress, std::string fromAddress, base64 subject, base64 message, int encodingType, int lastActionTime, std::string status, std::string ackData) : m_msgID(msgID), m_toAddress(toAddress), m_fromAddress(fromAddress), m_subject(subject), m_message(message), m_encodingType(encodingType), m_lastActionTime(lastActionTime), m_status(status), m_ackData(ackData) {};
+    
+    std::string getMsgID(){return m_msgID;};
+    std::string getToAddress(){return m_toAddress;};
+    std::string getFromAddress(){return m_fromAddress;};
+    base64 getSubject(){return m_subject;};
+    base64 getMessage(){return m_message;};
+    int getEncodingType(){return m_encodingType;};
+    int getLastActionTime(){return m_lastActionTime;};
+    std::string getStatus(){return m_status;};
+    std::string getAckData(){return m_ackData;};
+
+private:
+    
+    std::string m_msgID;
+    std::string m_toAddress;
+    std::string m_fromAddress;
+    base64 m_subject;
+    base64 m_message;
+    int m_encodingType;
+    int m_lastActionTime;
+    std::string m_status;
+    std::string m_ackData;
+    
+};
+
+
+class BitSentMessage {
+    
+public:
+    
+private:
+    
+};
+
+
 class BitMessage : public NetworkModule {
 
 public:
@@ -46,7 +86,7 @@ public:
 
     // Inbox Management
     
-    void getAllInboxMessages();
+    std::vector<BitInboxMessage> getAllInboxMessages();
     
     void getInboxMessageByID(std::string msgID, bool setRead=true);
     
@@ -58,7 +98,7 @@ public:
     
     void getSentMessagesBySender(BitMessageAddress address);
     
-    void trashMessage(std::string msgID);
+    bool trashMessage(std::string msgID);
     
     void trashSentMessageByAckData(std::string ackData);
 
@@ -86,8 +126,8 @@ public:
     BitMessageAddress createChan(base64 password);
     void createChan(std::string password){createChan(base64(password));};
     
-    void joinChan(base64 password, BitMessageAddress address);
-    void joinChan(std::string password, BitMessageAddress address){joinChan(base64(password), address);};
+    bool joinChan(base64 password, BitMessageAddress address);
+    bool joinChan(std::string password, BitMessageAddress address){return joinChan(base64(password), address);};
     
     bool leaveChan(BitMessageAddress address);
     

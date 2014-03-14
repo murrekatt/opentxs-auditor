@@ -27,9 +27,10 @@ BitMessage::~BitMessage(){
 
 // Inbox Management
 
-void BitMessage::getAllInboxMessages(){
+std::vector<BitInboxMessage> BitMessage::getAllInboxMessages(){
 
     Parameters params;
+    std::vector<BitInboxMessage> placeholder;
 
     XmlResponse result = m_xmllib->run("getAllInboxMessages", params);
     
@@ -48,6 +49,7 @@ void BitMessage::getAllInboxMessages(){
     
     std::cout << "Inbox Messages: " << std::string(ValueString(result.second)) << std::endl;
 
+    return placeholder;
 
 };
 
@@ -61,7 +63,31 @@ void BitMessage::getSentMessageByID(std::string msgID){};
 
 void BitMessage::getSentMessagesBySender(BitMessageAddress address){};
 
-void BitMessage::trashMessage(std::string msgID){};
+bool BitMessage::trashMessage(std::string msgID){
+
+    Parameters params;
+    params.push_back(ValueString(msgID));
+    
+    XmlResponse result = m_xmllib->run("trashMessage", params);
+    
+    if(result.first == false){
+        std::cout << "Error: trashMessage failed" << std::endl;
+        return false;
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return false;
+        }
+    }
+    
+    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
+    
+    return true;
+    
+};
 
 void BitMessage::trashSentMessageByAckData(std::string ackData){};
 
@@ -111,7 +137,32 @@ BitMessageAddress BitMessage::createChan(base64 password){
 
 
 
-void BitMessage::joinChan(base64 password, BitMessageAddress address){};
+bool BitMessage::joinChan(base64 password, BitMessageAddress address){
+
+    Parameters params;
+    params.push_back(ValueString(password.encoded()));
+    params.push_back(ValueString(address.getAddress()));
+    
+    XmlResponse result = m_xmllib->run("joinChan", params);
+    
+    if(result.first == false){
+        std::cout << "Error: joinChan failed" << std::endl;
+        return false;
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return false;
+        }
+    }
+    
+    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
+    
+    return true;
+
+};
 
 
 
