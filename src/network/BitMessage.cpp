@@ -61,7 +61,7 @@ void BitMessage::getAllSentMessages(){};
 
 void BitMessage::getSentMessageByID(std::string msgID){};
 
-void BitMessage::getSentMessagesBySender(BitMessageAddress address){};
+void BitMessage::getSentMessagesBySender(std::string address){};
 
 bool BitMessage::trashMessage(std::string msgID){
 
@@ -93,22 +93,22 @@ void BitMessage::trashSentMessageByAckData(std::string ackData){};
 
 // Message Management
 
-void BitMessage::sendMessage(BitMessageAddress fromAddress, BitMessageAddress toAddress, base64 subject, base64 message, int encodingType){};
+void BitMessage::sendMessage(std::string fromAddress, std::string toAddress, base64 subject, base64 message, int encodingType){};
 
-void BitMessage::sendBroadcast(BitMessageAddress fromAddress, base64 subject, base64 message, int encodingType){};
+void BitMessage::sendBroadcast(std::string fromAddress, base64 subject, base64 message, int encodingType){};
 
 // Subscription Management
 
 void BitMessage::listSubscriptions(){};
 
-void BitMessage::addSubscription(BitMessageAddress address, base64 label){};
+void BitMessage::addSubscription(std::string address, base64 label){};
 
-void BitMessage::deleteSubscription(BitMessageAddress address){};
+void BitMessage::deleteSubscription(std::string address){};
 
 
 // Channel Management
 
-BitMessageAddress BitMessage::createChan(base64 password){
+std::string BitMessage::createChan(base64 password){
 
     Parameters params;
     params.push_back(ValueString(password.encoded()));
@@ -117,31 +117,31 @@ BitMessageAddress BitMessage::createChan(base64 password){
     
     if(result.first == false){
         std::cout << "Error: createChan failed" << std::endl;
-        return BitMessageAddress(base64(""), "", 0, false, false);
+        return "";
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
             std::cout << std::string(ValueString(result.second)) << std::endl;
-            return BitMessageAddress(base64(""), "", 0, false, false);
+            return "";
         }
     }
     
     std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
     
-    return BitMessageAddress(base64(""), std::string(ValueString(result.second)));
+    return std::string(ValueString(result.second));
 
 };
 
 
 
 
-bool BitMessage::joinChan(base64 password, BitMessageAddress address){
+bool BitMessage::joinChan(base64 password, std::string address){
 
     Parameters params;
     params.push_back(ValueString(password.encoded()));
-    params.push_back(ValueString(address.getAddress()));
+    params.push_back(ValueString(address));
     
     XmlResponse result = m_xmllib->run("joinChan", params);
     
@@ -166,10 +166,10 @@ bool BitMessage::joinChan(base64 password, BitMessageAddress address){
 
 
 
-bool BitMessage::leaveChan(BitMessageAddress address){
+bool BitMessage::leaveChan(std::string address){
 
     Parameters params;
-    params.push_back(ValueString(address.getAddress()));
+    params.push_back(ValueString(address));
     
     XmlResponse result = m_xmllib->run("leaveChan", params);
     
@@ -196,10 +196,10 @@ bool BitMessage::leaveChan(BitMessageAddress address){
 
 // Address Management
 
-std::vector<BitMessageAddress> BitMessage::listAddresses(){
+BitMessageAddressBook BitMessage::listAddresses(){
     
     std::vector<xmlrpc_c::value> params;
-    std::vector<BitMessageAddress> responses;
+    BitMessageAddressBook responses;
     
     XmlResponse result = m_xmllib->run("listAddresses2", params);
     
@@ -228,7 +228,7 @@ std::vector<BitMessageAddress> BitMessage::listAddresses(){
     
     const Json::Value addresses = root["addresses"];
     for ( int index = 0; index < addresses.size(); ++index ){  // Iterates over the sequence elements.
-        BitMessageAddress entry(base64(addresses[index].get("label", "").asString()), addresses[index].get("address", "").asString(), addresses[index].get("stream", 0).asInt(), addresses[index].get("enabled", false).asBool(), addresses[index].get("chan", false).asBool());
+        BitMessageAddressBookEntry entry(base64(addresses[index].get("label", "").asString()), addresses[index].get("address", "").asString(), addresses[index].get("stream", 0).asInt(), addresses[index].get("enabled", false).asBool(), addresses[index].get("chan", false).asBool());
         
         responses.push_back(entry);
         
@@ -266,10 +266,10 @@ void BitMessage::getDeterministicAddress(base64 password, int addressVersionNumb
 
 void BitMessage::listAddressBookEntries(){};
 
-bool BitMessage::addAddressBookEntry(BitMessageAddress address, base64 label){
+bool BitMessage::addAddressBookEntry(std::string address, base64 label){
 
     Parameters params;
-    params.push_back(ValueString(address.getAddress()));
+    params.push_back(ValueString(address));
     params.push_back(ValueString(label.encoded()));
     
     XmlResponse result = m_xmllib->run("addAddressBookEntry", params);
@@ -294,11 +294,10 @@ bool BitMessage::addAddressBookEntry(BitMessageAddress address, base64 label){
 };
 
 
-
-bool BitMessage::deleteAddressBookEntry(BitMessageAddress address){
+bool BitMessage::deleteAddressBookEntry(std::string address){
 
     Parameters params;
-    params.push_back(ValueString(address.getAddress()));
+    params.push_back(ValueString(address));
     
     XmlResponse result = m_xmllib->run("deleteAddressBookEntry", params);
     
@@ -323,10 +322,10 @@ bool BitMessage::deleteAddressBookEntry(BitMessageAddress address){
 
 
 
-bool BitMessage::deleteAddress(BitMessageAddress address){
+bool BitMessage::deleteAddress(std::string address){
 
     Parameters params;
-    params.push_back(ValueString(address.getAddress()));
+    params.push_back(ValueString(address));
     
     XmlResponse result = m_xmllib->run("deleteAddress", params);
     
@@ -349,7 +348,7 @@ bool BitMessage::deleteAddress(BitMessageAddress address){
 
 };
 
-void BitMessage::decodeAddress(BitMessageAddress address){};
+void BitMessage::decodeAddress(std::string address){};
 
 
 
