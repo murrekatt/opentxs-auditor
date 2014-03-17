@@ -334,8 +334,6 @@ bool BitMessage::trashMessage(std::string msgID){
         }
     }
     
-    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
-    
     return true;
     
 };
@@ -361,8 +359,6 @@ bool BitMessage::trashSentMessageByAckData(std::string ackData){
             return false;
         }
     }
-    
-    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
     
     return true;
 
@@ -397,8 +393,6 @@ std::string BitMessage::sendMessage(std::string fromAddress, std::string toAddre
         }
     }
     
-    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
-    
     return std::string(ValueString(result.second));
 
 };
@@ -426,8 +420,6 @@ std::string BitMessage::sendBroadcast(std::string fromAddress, base64 subject, b
             return "";
         }
     }
-    
-    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
     
     return std::string(ValueString(result.second));
 
@@ -464,8 +456,6 @@ std::string BitMessage::createChan(base64 password){
         }
     }
     
-    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
-    
     return std::string(ValueString(result.second));
 
 };
@@ -494,8 +484,6 @@ bool BitMessage::joinChan(base64 password, std::string address){
         }
     }
     
-    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
-    
     return true;
 
 };
@@ -522,8 +510,6 @@ bool BitMessage::leaveChan(std::string address){
         }
     }
     
-    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
-
     return true;
 };
 
@@ -568,25 +554,7 @@ BitMessageIdentities BitMessage::listAddresses(){
         
         responses.push_back(entry);
         
-        // Debug Output
-        std::cout << std::endl;
-        std::cout <<  "Address Index: " << index << std::endl;
-        
-        std::string label;
-        label = responses.at(index).getLabel().decoded();
-        label.erase(label.find_last_not_of(" \n\r\t")+1);
-        std::cout <<  "label: " << label << std::endl;
-        
-        std::cout <<  "address: " << responses.at(index).getAddress() << std::endl;
-        std::cout <<  "stream: " << responses.at(index).getStream() << std::endl;
-        std::cout <<  "enabled: " << responses.at(index).getEnabled() << std::endl;
-        std::cout <<  "chan: " << responses.at(index).getChan() << std::endl;
-        std::cout << std::endl;
-        
-        
     }
-    
-    //std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
     
     return responses;
     
@@ -594,11 +562,118 @@ BitMessageIdentities BitMessage::listAddresses(){
 
 
 
-void BitMessage::createRandomAddress(base64 label, bool eighteenByteRipe, int totalDifficulty, int smallMessageDifficulty){};
+BitMessageAddress BitMessage::createRandomAddress(base64 label, bool eighteenByteRipe, int totalDifficulty, int smallMessageDifficulty){
 
-void BitMessage::createDeterministicAddresses(base64 password, int numberOfAddresses, int addressVersionNumber, int streamNumber, bool eighteenByteRipe, int totalDifficulty, int smallMessageDifficulty){};
+    Parameters params;
+    params.push_back(ValueString(label.encoded()));
+    params.push_back(ValueBool(eighteenByteRipe));
+    params.push_back(ValueInt(totalDifficulty));
+    params.push_back(ValueInt(smallMessageDifficulty));
 
-void BitMessage::getDeterministicAddress(base64 password, int addressVersionNumber, int streamNumber){};
+    
+    XmlResponse result = m_xmllib->run("createRandomAddress", params);
+    
+    if(result.first == false){
+        std::cout << "Error: createRandomAddress failed" << std::endl;
+        return "";
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return "";
+        }
+    }
+    
+    return std::string(ValueString(result.second));
+
+};
+
+
+
+std::vector<BitMessageAddress> BitMessage::createDeterministicAddresses(base64 password, int numberOfAddresses, int addressVersionNumber, int streamNumber, bool eighteenByteRipe, int totalDifficulty, int smallMessageDifficulty){
+
+    Parameters params;
+    std::vector<BitMessageAddress> addressList;
+    
+    params.push_back(ValueString(password.encoded()));
+    params.push_back(ValueInt(numberOfAddresses));
+    params.push_back(ValueInt(addressVersionNumber));
+    params.push_back(ValueInt(streamNumber));
+    params.push_back(ValueBool(eighteenByteRipe));
+    params.push_back(ValueInt(totalDifficulty));
+    params.push_back(ValueInt(smallMessageDifficulty));
+
+    
+    XmlResponse result = m_xmllib->run("createDeterministicAddresses", params);
+    
+    if(result.first == false){
+        std::cout << "Error: createDeterministicAddresses failed" << std::endl;
+        return addressList;
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return addressList;
+        }
+    }
+    
+    Json::Value root;
+    Json::Reader reader;
+    
+    bool parsesuccess = reader.parse( ValueString(result.second), root );
+    if ( !parsesuccess )
+    {
+        std::cout  << "Failed to parse address list\n" << reader.getFormattedErrorMessages();
+        return addressList;
+    }
+    
+    const Json::Value addresses = root["addresses"];
+    for ( int index = 0; index < addresses.size(); ++index ){  // Iterates over the sequence elements.
+        BitMessageAddress generatedAddress = addresses[index].asString();
+        
+        addressList.push_back(generatedAddress);
+        
+    }
+    
+    return addressList;
+
+};
+
+
+
+BitMessageAddress BitMessage::getDeterministicAddress(base64 password, int addressVersionNumber, int streamNumber){
+    
+    Parameters params;
+    params.push_back(ValueString(password.encoded()));
+    params.push_back(ValueInt(addressVersionNumber));
+    params.push_back(ValueInt(streamNumber));
+    
+    
+    XmlResponse result = m_xmllib->run("getDeterministicAddress", params);
+    
+    if(result.first == false){
+        std::cout << "Error: getDeterministicAddress failed" << std::endl;
+        return "";
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return "";
+        }
+    }
+    
+    return std::string(ValueString(result.second));
+
+};
+
+
+
 
 void BitMessage::listAddressBookEntries(){};
 
@@ -677,9 +752,7 @@ bool BitMessage::deleteAddress(std::string address){
             return false;
         }
     }
-    
-    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
-    
+        
     return true;
 
 };
@@ -753,6 +826,29 @@ int BitMessage::add(int x, int y){
 
 
 
-void BitMessage::getStatus(){};
+std::string BitMessage::getStatus(std::string ackData){
+
+    Parameters params;
+    
+    params.push_back(ValueString(ackData));
+
+    XmlResponse result = m_xmllib->run("getStatus", params);
+    
+    if(result.first == false){
+        std::cout << "Error Accessing BitMessage API" << std::endl;
+        return "";
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return "";
+        }
+    }
+    
+    return std::string(ValueString(result.second));
+
+};
 
 

@@ -32,6 +32,7 @@ private:
     int m_stream;
     bool m_enabled;
     bool m_chan;
+    
 };
 
 typedef std::vector<BitMessageIdentity> BitMessageIdentities;
@@ -92,6 +93,7 @@ private:
 typedef std::vector<BitInboxMessage> BitMessageInbox;
 
 
+
 class BitSentMessage {
     
 public:
@@ -124,6 +126,7 @@ private:
 };
 
 typedef std::vector<BitSentMessage> BitMessageOutbox;
+
 
 
 
@@ -180,7 +183,7 @@ public:
     // Channel Management
     
     BitMessageAddress createChan(base64 password);
-    void createChan(std::string password){createChan(base64(password));};
+    BitMessageAddress createChan(std::string password){return createChan(base64(password));};
     
     bool joinChan(base64 password, std::string address);
     bool joinChan(std::string password, std::string address){return joinChan(base64(password), address);};
@@ -192,14 +195,16 @@ public:
     
     BitMessageIdentities listAddresses(); // This is technically "listAddresses2" in the API reference
     
-    void createRandomAddress(base64 label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
-    void createRandomAddress(std::string label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){createRandomAddress(label, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);};
+    BitMessageAddress createRandomAddress(base64 label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
+    BitMessageAddress createRandomAddress(std::string label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){return createRandomAddress(label, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);};
 
-    void createDeterministicAddresses(base64 password, int numberOfAddresses=1, int addressVersionNumber=0, int streamNumber=0, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
-    void createDeterministicAddresses(std::string password, int numberOfAddresses=1, int addressVersionNumber=0, int streamNumber=0, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){createDeterministicAddresses(base64(password), numberOfAddresses, addressVersionNumber, streamNumber, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);};
+    // Warning - This is not guaranteed to return a filled vector if the call does not return any new addresses.
+    // You must check that you are accessing a legal position in the vector first.
+    std::vector<BitMessageAddress> createDeterministicAddresses(base64 password, int numberOfAddresses=1, int addressVersionNumber=0, int streamNumber=0, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
+    std::vector<BitMessageAddress> createDeterministicAddresses(std::string password, int numberOfAddresses=1, int addressVersionNumber=0, int streamNumber=0, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){return createDeterministicAddresses(base64(password), numberOfAddresses, addressVersionNumber, streamNumber, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);};
     
-    void getDeterministicAddress(base64 password, int addressVersionNumber=4, int streamNumber=1);
-    void getDeterministicAddress(std::string password, int addressVersionNumber=4, int streamNumber=1){getDeterministicAddress(base64(password), addressVersionNumber, streamNumber);};
+    BitMessageAddress getDeterministicAddress(base64 password, int addressVersionNumber=4, int streamNumber=1);
+    BitMessageAddress getDeterministicAddress(std::string password, int addressVersionNumber=4, int streamNumber=1){return getDeterministicAddress(base64(password), addressVersionNumber, streamNumber);};
     
     void listAddressBookEntries();
     
@@ -219,7 +224,7 @@ public:
     
     int add(int x, int y);
     
-    void getStatus();
+    std::string getStatus(std::string ackData);
     
     
     // Extra BitMessage Options (some of these are pass-through functions not related to the API)
@@ -251,7 +256,5 @@ private:
     
     // Communication Library, XmlRPC in this case
     XmlRPC *m_xmllib;
-    
-    
     
 };

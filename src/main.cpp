@@ -42,9 +42,7 @@ int main(int argc, char * argv[])
     std::cout << dynamic_cast<BitMessage*>(netModule)->add(2, 3) << std::endl;
     
     std::cout << std::endl;
-    std::cout << "BitMessage sendMessage Test" << std::endl;
-    
-    
+    std::cout << "BitMessage getDeterministicAddress Test" << std::endl;
     //std::cout << dynamic_cast<BitMessage*>(netModule)->sendMessage("BM-", "BM-", base64("Testing"), base64("Knock if you receive this message?")) << std::endl;
     //std::cout << dynamic_cast<BitMessage*>(netModule)->getSentMessageByID().getMessage().decoded() << std::endl;
     //std::cout << "Message on last received message is: " << std::endl;
