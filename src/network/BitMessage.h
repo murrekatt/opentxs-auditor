@@ -4,19 +4,23 @@
 
 #include <memory>
 #include <string>
+#include <ctime>
 #include "Network.h"
 #include "XmlRPC.h"
 #include "base64.h"
 
-class BitMessageAddress {
+
+typedef std::string BitMessageAddress;
+
+class BitMessageIdentity {
     
 public:
     
-    BitMessageAddress(base64 label, std::string address, int stream, bool enabled=true, bool chan=false) : m_label(label), m_address(address), m_stream(stream), m_enabled(enabled), m_chan(chan) {};
+    BitMessageIdentity(base64 label, BitMessageAddress address, int stream=1, bool enabled=true, bool chan=false) : m_label(label), m_address(address), m_stream(stream), m_enabled(enabled), m_chan(chan) {};
     
     // Note "getLabel" returns a base64 formatted label, you will need to decode this object via base64::decoded
     base64 getLabel(){return m_label;};
-    std::string getAddress(){return m_address;};
+    BitMessageAddress getAddress(){return m_address;};
     int getStream(){return m_stream;};
     bool getEnabled(){return m_enabled;};
     bool getChan(){return m_chan;};
@@ -24,11 +28,146 @@ public:
 private:
     
     base64 m_label;
-    std::string m_address;
+    BitMessageAddress m_address;
     int m_stream;
     bool m_enabled;
     bool m_chan;
+    
 };
+
+typedef std::vector<BitMessageIdentity> BitMessageIdentities;
+
+
+
+
+class BitMessageAddressBookEntry {
+    
+public:
+    
+    BitMessageAddressBookEntry(BitMessageAddress address, base64 label) : m_address(address), m_label(label) {};
+
+    BitMessageAddress getAddress(){return m_address;};
+    base64 getLabel(){return m_label;};
+    
+private:
+    
+    BitMessageAddress m_address;
+    base64 m_label;
+    
+};
+
+typedef std::vector<BitMessageAddressBookEntry> BitMessageAddressBook;
+
+
+class BitMessageSubscription {
+    
+public:
+    
+    BitMessageSubscription(std::string address, bool enabled, base64 label) : m_address(address), m_enabled(enabled), m_label(label) {};
+    
+    std::string getAddress(){return m_address;};
+    bool getEnabled(){return m_enabled;};
+    base64 getLabel(){return m_label;};
+    
+private:
+    
+    std::string m_address;
+    bool m_enabled;
+    base64 m_label;
+    
+};
+
+typedef std::vector<BitMessageSubscription> BitMessageSubscriptionList;
+
+
+class BitInboxMessage {
+
+public:
+    
+    BitInboxMessage(std::string msgID, BitMessageAddress toAddress, BitMessageAddress fromAddress, base64 subject, base64 message, int encodingType, std::time_t m_receivedTime, bool m_read) : m_msgID(msgID), m_toAddress(toAddress), m_fromAddress(fromAddress), m_subject(subject), m_message(message), m_encodingType(encodingType), m_receivedTime(m_receivedTime), m_read(m_read) {};
+    
+    std::string getMsgID(){return m_msgID;};
+    BitMessageAddress getToAddress(){return m_toAddress;};
+    BitMessageAddress getFromAddress(){return m_fromAddress;};
+    base64 getSubject(){return m_subject;};
+    base64 getMessage(){return m_message;};
+    int getEncodingType(){return m_encodingType;};
+    std::time_t getReceivedTime(){return m_receivedTime;};
+    bool getRead(){return m_read;};
+
+
+private:
+    
+    std::string m_msgID;
+    BitMessageAddress m_toAddress;
+    BitMessageAddress m_fromAddress;
+    base64 m_subject;
+    base64 m_message;
+    int m_encodingType;
+    std::time_t m_receivedTime;
+    bool m_read;
+    
+};
+
+typedef std::vector<BitInboxMessage> BitMessageInbox;
+
+
+
+class BitSentMessage {
+    
+public:
+    
+    BitSentMessage(std::string msgID, BitMessageAddress toAddress, BitMessageAddress fromAddress, base64 subject, base64 message, int encodingType, std::time_t lastActionTime, std::string status, std::string ackData) : m_msgID(msgID), m_toAddress(toAddress), m_fromAddress(fromAddress), m_subject(subject), m_message(message), m_encodingType(encodingType), m_lastActionTime(lastActionTime), m_status(status), m_ackData(ackData) {};
+    
+    std::string getMsgID(){return m_msgID;};
+    BitMessageAddress getToAddress(){return m_toAddress;};
+    BitMessageAddress getFromAddress(){return m_fromAddress;};
+    base64 getSubject(){return m_subject;};
+    base64 getMessage(){return m_message;};
+    int getEncodingType(){return m_encodingType;};
+    std::time_t getLastActionTime(){return m_lastActionTime;};
+    std::string getStatus(){return m_status;};
+    std::string getAckData(){return m_ackData;};
+
+    
+private:
+    
+    std::string m_msgID;
+    BitMessageAddress m_toAddress;
+    BitMessageAddress m_fromAddress;
+    base64 m_subject;
+    base64 m_message;
+    int m_encodingType;
+    std::time_t m_lastActionTime;
+    std::string m_status;
+    std::string m_ackData;
+    
+};
+
+typedef std::vector<BitSentMessage> BitMessageOutbox;
+
+
+class BitDecodedAddress {
+    
+public:
+    
+    BitDecodedAddress(std::string status, int addressVersion, std::string ripe, int streamNumber) : m_status(status), m_addressVersion(addressVersion), m_ripe(ripe), m_streamNumber(streamNumber) {};
+    
+    std::string getStatus(){return m_status;};
+    int getAddressVersion(){return m_addressVersion;};
+    std::string getRipe(){return m_ripe;};
+    int getStreamNumber(){return m_streamNumber;};
+    
+    
+private:
+    
+    std::string m_status;
+    int m_addressVersion;
+    std::string m_ripe;
+    int m_streamNumber;
+    
+};
+
 
 
 class BitMessage : public NetworkModule {
@@ -46,82 +185,86 @@ public:
 
     // Inbox Management
     
-    std::vector<BitMessageAddress> listAddresses(); // This is technically "listAddresses2" in the API reference
+    BitMessageInbox getAllInboxMessages();
     
-    void getAllInboxMessages();
+    BitInboxMessage getInboxMessageByID(std::string msgID, bool setRead=true);
     
-    void getInboxMessageByID(std::string msgID, bool setRead=true);
+    BitMessageOutbox getAllSentMessages();
     
-    void getSentMessageByAckData(std::string ackData);
+    BitSentMessage getSentMessageByID(std::string msgID);
+
+    BitSentMessage getSentMessageByAckData(std::string ackData);
+
+    std::vector<BitSentMessage> getSentMessagesBySender(std::string address);
     
-    void getAllSentMessages();
+    bool trashMessage(std::string msgID);
     
-    void getSentMessageByID(std::string msgID);
-    
-    void getSentMessagesBySender(BitMessageAddress address);
-    
-    void trashMessage(std::string msgID);
-    
-    void trashSentMessageByAckData(std::string ackData);
+    bool trashSentMessageByAckData(std::string ackData);
 
     
     // Message Management
-    void sendMessage(BitMessageAddress fromAddress, BitMessageAddress toAddress, base64 subject, base64 message, int encodingType=2);
-    void sendMessage(BitMessageAddress fromAddress, BitMessageAddress toAddress, std::string subject, std::string message, int encodingType=2){sendMessage(fromAddress, toAddress, base64(subject), base64(message), encodingType);};
+    std::string sendMessage(std::string fromAddress, std::string toAddress, base64 subject, base64 message, int encodingType=2);
+    std::string sendMessage(std::string fromAddress, std::string toAddress, std::string subject, std::string message, int encodingType=2){return sendMessage(fromAddress, toAddress, base64(subject), base64(message), encodingType);};
 
-    void sendBroadcast(BitMessageAddress fromAddress, base64 subject, base64 message, int encodingType=2);
-    void sendBroadcast(BitMessageAddress fromAddress, std::string subject, std::string message, int encodingType=2){sendBroadcast(fromAddress, base64(subject), base64(message), encodingType);};
+    std::string sendBroadcast(std::string fromAddress, base64 subject, base64 message, int encodingType=2);
+    std::string sendBroadcast(std::string fromAddress, std::string subject, std::string message, int encodingType=2){return sendBroadcast(fromAddress, base64(subject), base64(message), encodingType);};
 
     
     // Subscription Management
     
-    void listSubscriptions();
+    BitMessageSubscriptionList listSubscriptions();
     
-    void addSubscription(BitMessageAddress address, base64 label);
-    void addSubscription(BitMessageAddress address, std::string label){addSubscription(address, base64(label));};
+    bool addSubscription(std::string address, base64 label);
+    bool addSubscription(std::string address, std::string label){return addSubscription(address, base64(label));};
 
-    void deleteSubscription(BitMessageAddress address);
+    bool deleteSubscription(std::string address);
     
     
     // Channel Management
     
-    void createChan(base64 password);
-    void createChan(std::string password){createChan(base64(password));};
+    BitMessageAddress createChan(base64 password);
+    BitMessageAddress createChan(std::string password){return createChan(base64(password));};
     
-    void joinChan(base64 password, BitMessageAddress address);
-    void joinChan(std::string password, BitMessageAddress address){joinChan(base64(password), address);};
+    bool joinChan(base64 password, std::string address);
+    bool joinChan(std::string password, std::string address){return joinChan(base64(password), address);};
     
-    void leaveChan(BitMessageAddress address);
+    bool leaveChan(std::string address);
     
     
     // Address Management
     
-    void createRandomAddress(base64 label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
-    void createRandomAddress(std::string label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){createRandomAddress(label, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);};
+    BitMessageIdentities listAddresses(); // This is technically "listAddresses2" in the API reference
+    
+    BitMessageAddress createRandomAddress(base64 label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
+    BitMessageAddress createRandomAddress(std::string label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){return createRandomAddress(label, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);};
 
-    void createDeterministicAddresses(base64 password, int numberOfAddresses=1, int addressVersionNumber=0, int streamNumber=0, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
-    void createDeterministicAddresses(std::string password, int numberOfAddresses=1, int addressVersionNumber=0, int streamNumber=0, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){createDeterministicAddresses(base64(password), numberOfAddresses, addressVersionNumber, streamNumber, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);};
+    // Warning - This is not guaranteed to return a filled vector if the call does not return any new addresses.
+    // You must check that you are accessing a legal position in the vector first.
+    std::vector<BitMessageAddress> createDeterministicAddresses(base64 password, int numberOfAddresses=1, int addressVersionNumber=0, int streamNumber=0, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
+    std::vector<BitMessageAddress> createDeterministicAddresses(std::string password, int numberOfAddresses=1, int addressVersionNumber=0, int streamNumber=0, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){return createDeterministicAddresses(base64(password), numberOfAddresses, addressVersionNumber, streamNumber, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);};
     
-    void getDeterministicAddress(base64 password, int addressVersionNumber=4, int streamNumber=1);
-    void getDeterministicAddress(std::string password, int addressVersionNumber=4, int streamNumber=1){getDeterministicAddress(base64(password), addressVersionNumber, streamNumber);};
+    BitMessageAddress getDeterministicAddress(base64 password, int addressVersionNumber=4, int streamNumber=1);
+    BitMessageAddress getDeterministicAddress(std::string password, int addressVersionNumber=4, int streamNumber=1){return getDeterministicAddress(base64(password), addressVersionNumber, streamNumber);};
     
-    void listAddressBookEntries();
+    BitMessageAddressBook listAddressBookEntries();
     
-    void addAddressBookEntry(BitMessageAddress address, base64 label);
-    void addAddressBookEntry(BitMessageAddress address, std::string label){addAddressBookEntry(address, base64(label));};
+    bool addAddressBookEntry(std::string address, base64 label);
+    bool addAddressBookEntry(std::string address, std::string label){return addAddressBookEntry(address, base64(label));};
 
-    void deleteAddressBookEntry(BitMessageAddress address);
+    bool deleteAddressBookEntry(std::string address);
     
-    void deleteAddress(BitMessageAddress address);
+    bool deleteAddress(BitMessageAddress address);
     
-    void decodeAddress(BitMessageAddress address);
+    BitDecodedAddress decodeAddress(BitMessageAddress address);
     
     
     // Other API Commands
     
     bool testApi();
+    
     int add(int x, int y);
-    void getStatus();
+    
+    std::string getStatus(std::string ackData);
     
     
     // Extra BitMessage Options (some of these are pass-through functions not related to the API)
@@ -142,6 +285,7 @@ private:
     typedef xmlrpc_c::value_nil ValueNil;
     typedef xmlrpc_c::value_array ValueArray;
     typedef xmlrpc_c::value_struct ValueStruct;
+    typedef std::time_t ValueTime;
     
     // Private member variables
     std::string m_host;
@@ -152,7 +296,5 @@ private:
     
     // Communication Library, XmlRPC in this case
     XmlRPC *m_xmllib;
-    
-    
     
 };
