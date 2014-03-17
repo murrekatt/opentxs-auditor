@@ -429,9 +429,55 @@ std::string BitMessage::sendBroadcast(std::string fromAddress, base64 subject, b
 
 void BitMessage::listSubscriptions(){};
 
-void BitMessage::addSubscription(std::string address, base64 label){};
+bool BitMessage::addSubscription(std::string address, base64 label){
 
-void BitMessage::deleteSubscription(std::string address){};
+    Parameters params;
+    params.push_back(ValueString(address));
+    params.push_back(ValueString(label.encoded()));
+
+    
+    XmlResponse result = m_xmllib->run("addSubscription", params);
+    
+    if(result.first == false){
+        std::cout << "Error: createChan failed" << std::endl;
+        return false;
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return false;
+        }
+    }
+    
+    return true;
+
+};
+
+bool BitMessage::deleteSubscription(std::string address){
+
+    Parameters params;
+    params.push_back(ValueString(address));
+    
+    XmlResponse result = m_xmllib->run("deleteSubscription", params);
+    
+    if(result.first == false){
+        std::cout << "Error: createChan failed" << std::endl;
+        return false;
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return false;
+        }
+    }
+    
+    return true;
+
+};
 
 
 // Channel Management

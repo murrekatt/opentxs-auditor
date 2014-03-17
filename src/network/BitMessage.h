@@ -195,10 +195,10 @@ public:
     
     void listSubscriptions();
     
-    void addSubscription(std::string address, base64 label);
-    void addSubscription(std::string address, std::string label){addSubscription(address, base64(label));};
+    bool addSubscription(std::string address, base64 label);
+    bool addSubscription(std::string address, std::string label){return addSubscription(address, base64(label));};
 
-    void deleteSubscription(std::string address);
+    bool deleteSubscription(std::string address);
     
     
     // Channel Management
