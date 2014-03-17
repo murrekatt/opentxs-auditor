@@ -11,7 +11,8 @@ class base64 {
     
 public:
     
-    base64(std::string msg=""){m_data = p_encode((const unsigned char *)msg.c_str(), msg.size());};
+    base64(std::string msg="", bool packed=false){if(packed)m_data = msg;else{m_data = p_encode((const unsigned char *)msg.c_str(), msg.size());}};
+
 
     std::string encoded() const {return m_data;};
     std::string decoded() {return p_decode(m_data);};

@@ -10,6 +10,7 @@
 #include <iostream>
 #include <vector>
 #include <utility>
+#include <algorithm>
 
 
 BitMessage::BitMessage(std::string Host, int Port, std::string Username, std::string Pass) : m_host(Host), m_port(Port), m_username(Username), m_pass(Pass) {
@@ -30,32 +31,109 @@ BitMessage::~BitMessage(){
 std::vector<BitInboxMessage> BitMessage::getAllInboxMessages(){
 
     Parameters params;
-    std::vector<BitInboxMessage> placeholder;
+    std::vector<BitInboxMessage> inbox;
 
     XmlResponse result = m_xmllib->run("getAllInboxMessages", params);
     
     if(result.first == false){
         std::cout << "Error: getAllInboxMessages failed" << std::endl;
-        //return responses;
+        return inbox;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
             std::cout << std::string(ValueString(result.second)) << std::endl;
-            //return responses;
+            return inbox;
         }
     }
     
-    std::cout << "Inbox Messages: " << std::string(ValueString(result.second)) << std::endl;
-
-    return placeholder;
+    Json::Value root;
+    Json::Reader reader;
+    
+    bool parsesuccess = reader.parse( ValueString(result.second), root );
+    if ( !parsesuccess )
+    {
+        std::cout  << "Failed to parse inbox\n" << reader.getFormattedErrorMessages();
+        return inbox;
+    }
+    
+    const Json::Value inboxMessages = root["inboxMessages"];
+    for ( int index = 0; index < inboxMessages.size(); ++index ){  // Iterates over the sequence elements.
+        
+        // We need to sanitize our string, or else it will get cut off because of the newlines.
+        std::string dirtyMessage = inboxMessages[index].get("message", "").asString();
+        dirtyMessage.erase(std::remove(dirtyMessage.begin(), dirtyMessage.end(), '\n'), dirtyMessage.end());
+        base64 cleanMessage(dirtyMessage, true);
+        
+        BitInboxMessage message(inboxMessages[index].get("msgid", "").asString(), inboxMessages[index].get("toAddress", "").asString(), inboxMessages[index].get("fromAddress", "").asString(), base64(inboxMessages[index].get("subject", "").asString(), true), cleanMessage, inboxMessages[index].get("encodingType", 0).asInt(), std::atoi(inboxMessages[index].get("receivedTime", 0).asString().c_str()), inboxMessages[index].get("read", false).asBool());
+        
+        inbox.push_back(message);
+        
+    }
+    
+    return inbox;
 
 };
 
-void BitMessage::getInboxMessageByID(std::string msgID, bool setRead){};
 
-void BitMessage::getSentMessageByAckData(std::string ackData){};
+
+
+BitInboxMessage BitMessage::getInboxMessageByID(std::string msgID, bool setRead){
+
+    Parameters params;
+    
+    params.push_back(ValueString(msgID));
+    params.push_back(ValueBool(setRead));
+
+    XmlResponse result = m_xmllib->run("getInboxMessageByID", params);
+    
+    if(result.first == false){
+        std::cout << "Error: getInboxMessageByID failed" << std::endl;
+        BitInboxMessage message("", "", "", base64(""), base64(""), 0, 0, false);
+        return message;
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            BitInboxMessage message("", "", "", base64(""), base64(""), 0, 0, false);
+            return message;
+        }
+    }
+    
+    
+    Json::Value root;
+    Json::Reader reader;
+    
+    bool parsesuccess = reader.parse( ValueString(result.second), root );
+    if ( !parsesuccess )
+    {
+        std::cout  << "Failed to parse inbox\n" << reader.getFormattedErrorMessages();
+        BitInboxMessage message("", "", "", base64(""), base64(""), 0, 0, false);
+        return message;
+    }
+    
+    const Json::Value inboxMessage = root["inboxMessage"];
+    
+    std::string dirtyMessage = inboxMessage[0].get("message", "").asString();
+    dirtyMessage.erase(std::remove(dirtyMessage.begin(), dirtyMessage.end(), '\n'), dirtyMessage.end());
+    base64 cleanMessage(dirtyMessage, true);
+    
+    
+    BitInboxMessage message(inboxMessage[0].get("msgid", "").asString(), inboxMessage[0].get("toAddress", "").asString(), inboxMessage[0].get("fromAddress", "").asString(), base64(inboxMessage[0].get("subject", "").asString(), true), cleanMessage, inboxMessage[0].get("encodingType", 0).asInt(), std::atoi(inboxMessage[0].get("receivedTime", 0).asString().c_str()), inboxMessage[0].get("read", false).asBool());
+     
+    return message;
+
+};
+
+
+void BitMessage::getSentMessageByAckData(std::string ackData){
+
+
+
+};
 
 void BitMessage::getAllSentMessages(){};
 
@@ -196,10 +274,10 @@ bool BitMessage::leaveChan(std::string address){
 
 // Address Management
 
-BitMessageAddressBook BitMessage::listAddresses(){
+BitMessageIdentities BitMessage::listAddresses(){
     
     std::vector<xmlrpc_c::value> params;
-    BitMessageAddressBook responses;
+    BitMessageIdentities responses;
     
     XmlResponse result = m_xmllib->run("listAddresses2", params);
     
@@ -228,7 +306,7 @@ BitMessageAddressBook BitMessage::listAddresses(){
     
     const Json::Value addresses = root["addresses"];
     for ( int index = 0; index < addresses.size(); ++index ){  // Iterates over the sequence elements.
-        BitMessageAddressBookEntry entry(base64(addresses[index].get("label", "").asString()), addresses[index].get("address", "").asString(), addresses[index].get("stream", 0).asInt(), addresses[index].get("enabled", false).asBool(), addresses[index].get("chan", false).asBool());
+        BitMessageIdentity entry(base64(addresses[index].get("label", "").asString()), addresses[index].get("address", "").asString(), addresses[index].get("stream", 0).asInt(), addresses[index].get("enabled", false).asBool(), addresses[index].get("chan", false).asBool());
         
         responses.push_back(entry);
         

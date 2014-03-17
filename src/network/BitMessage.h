@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <ctime>
 #include "Network.h"
 #include "XmlRPC.h"
 #include "base64.h"
@@ -11,11 +12,11 @@
 
 typedef std::string BitMessageAddress;
 
-class BitMessageAddressBookEntry {
+class BitMessageIdentity {
     
 public:
     
-    BitMessageAddressBookEntry(base64 label, BitMessageAddress address, int stream=1, bool enabled=true, bool chan=false) : m_label(label), m_address(address), m_stream(stream), m_enabled(enabled), m_chan(chan) {};
+    BitMessageIdentity(base64 label, BitMessageAddress address, int stream=1, bool enabled=true, bool chan=false) : m_label(label), m_address(address), m_stream(stream), m_enabled(enabled), m_chan(chan) {};
     
     // Note "getLabel" returns a base64 formatted label, you will need to decode this object via base64::decoded
     base64 getLabel(){return m_label;};
@@ -33,14 +34,37 @@ private:
     bool m_chan;
 };
 
+typedef std::vector<BitMessageIdentity> BitMessageIdentities;
+
+
+
+
+class BitMessageAddressBookEntry {
+    
+public:
+    
+    BitMessageAddressBookEntry(BitMessageAddress address, base64 label) : m_address(address), m_label(label) {};
+
+    BitMessageAddress getAddress(){return m_address;};
+    base64 getLabel(){return m_label;};
+    
+private:
+    
+    BitMessageAddress m_address;
+    base64 m_label;
+    
+};
+
 typedef std::vector<BitMessageAddressBookEntry> BitMessageAddressBook;
+
+
 
 
 class BitInboxMessage {
 
 public:
     
-    BitInboxMessage(std::string msgID, BitMessageAddress toAddress, BitMessageAddress fromAddress, base64 subject, base64 message, int encodingType, int lastActionTime, std::string status, std::string ackData) : m_msgID(msgID), m_toAddress(toAddress), m_fromAddress(fromAddress), m_subject(subject), m_message(message), m_encodingType(encodingType), m_lastActionTime(lastActionTime), m_status(status), m_ackData(ackData) {};
+    BitInboxMessage(std::string msgID, BitMessageAddress toAddress, BitMessageAddress fromAddress, base64 subject, base64 message, int encodingType, std::time_t m_receivedTime, bool m_read) : m_msgID(msgID), m_toAddress(toAddress), m_fromAddress(fromAddress), m_subject(subject), m_message(message), m_encodingType(encodingType), m_receivedTime(m_receivedTime), m_read(m_read) {};
     
     std::string getMsgID(){return m_msgID;};
     BitMessageAddress getToAddress(){return m_toAddress;};
@@ -48,9 +72,9 @@ public:
     base64 getSubject(){return m_subject;};
     base64 getMessage(){return m_message;};
     int getEncodingType(){return m_encodingType;};
-    int getLastActionTime(){return m_lastActionTime;};
-    std::string getStatus(){return m_status;};
-    std::string getAckData(){return m_ackData;};
+    std::time_t getReceivedTime(){return m_receivedTime;};
+    bool getRead(){return m_read;};
+
 
 private:
     
@@ -60,9 +84,8 @@ private:
     base64 m_subject;
     base64 m_message;
     int m_encodingType;
-    int m_lastActionTime;
-    std::string m_status;
-    std::string m_ackData;
+    std::time_t m_receivedTime;
+    bool m_read;
     
 };
 
@@ -98,7 +121,7 @@ public:
     
     std::vector<BitInboxMessage> getAllInboxMessages();
     
-    void getInboxMessageByID(std::string msgID, bool setRead=true);
+    BitInboxMessage getInboxMessageByID(std::string msgID, bool setRead=true);
     
     void getSentMessageByAckData(std::string ackData);
     
@@ -144,7 +167,7 @@ public:
     
     // Address Management
     
-    BitMessageAddressBook listAddresses(); // This is technically "listAddresses2" in the API reference
+    BitMessageIdentities listAddresses(); // This is technically "listAddresses2" in the API reference
     
     void createRandomAddress(base64 label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
     void createRandomAddress(std::string label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){createRandomAddress(label, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);};
@@ -194,6 +217,7 @@ private:
     typedef xmlrpc_c::value_nil ValueNil;
     typedef xmlrpc_c::value_array ValueArray;
     typedef xmlrpc_c::value_struct ValueStruct;
+    typedef std::time_t ValueTime;
     
     // Private member variables
     std::string m_host;

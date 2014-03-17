@@ -65,7 +65,7 @@ XmlResponse XmlRPC::run(std::string methodName, std::vector<xmlrpc_c::value> par
         // Uncomment this to expand the size limit, I will move this elsewhere later into a function
         // similar to the timeout setting one.
         //
-        //xmlrpc_limit_set(XMLRPC_XML_SIZE_LIMIT_ID, 5e6);
+        xmlrpc_limit_set(XMLRPC_XML_SIZE_LIMIT_ID, 5e6);
 
         // Run our RPC Call
         xmlrpc_c::rpcPtr rpc(method, params);
