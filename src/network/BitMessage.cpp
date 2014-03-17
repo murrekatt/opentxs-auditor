@@ -425,9 +425,57 @@ std::string BitMessage::sendBroadcast(std::string fromAddress, base64 subject, b
 
 };
 
+
 // Subscription Management
 
-void BitMessage::listSubscriptions(){};
+BitMessageSubscriptionList BitMessage::listSubscriptions(){
+
+    Parameters params;
+    BitMessageSubscriptionList subscriptionList;
+    
+    XmlResponse result = m_xmllib->run("listSubscriptions", params);
+    
+    if(result.first == false){
+        std::cout << "Error: listSubscriptions failed" << std::endl;
+        return subscriptionList;
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return subscriptionList;
+        }
+    }
+    
+    Json::Value root;
+    Json::Reader reader;
+    
+    bool parsesuccess = reader.parse( ValueString(result.second), root );
+    if ( !parsesuccess )
+    {
+        std::cout  << "Failed to parse subscription list\n" << reader.getFormattedErrorMessages();
+        return subscriptionList;
+    }
+    
+    const Json::Value subscriptions = root["subscriptions"];
+    for ( int index = 0; index < subscriptions.size(); ++index ){  // Iterates over the sequence elements.
+        
+        std::string dirtyLabel = subscriptions[index].get("label", "").asString();
+        dirtyLabel.erase(std::remove(dirtyLabel.begin(), dirtyLabel.end(), '\n'), dirtyLabel.end());
+        std::string cleanRipe(dirtyLabel);
+        
+        BitMessageSubscription subscription(subscriptions[index].get("address", "").asString(), subscriptions[index].get("enabled", "").asBool(), base64(cleanRipe, true));
+        
+        subscriptionList.push_back(subscription);
+        
+    }
+    
+    return subscriptionList;
+
+};
+
+
 
 bool BitMessage::addSubscription(std::string address, base64 label){
 
@@ -721,7 +769,53 @@ BitMessageAddress BitMessage::getDeterministicAddress(base64 password, int addre
 
 
 
-void BitMessage::listAddressBookEntries(){};
+BitMessageAddressBook BitMessage::listAddressBookEntries(){
+
+    Parameters params;
+    
+    BitMessageAddressBook addressBook;
+    
+    XmlResponse result = m_xmllib->run("listAddressBookEntries", params);
+    
+    if(result.first == false){
+        std::cout << "Error: listAddressBookEntries failed" << std::endl;
+        return addressBook;
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return addressBook;
+        }
+    }
+    
+    Json::Value root;
+    Json::Reader reader;
+    
+    bool parsesuccess = reader.parse( ValueString(result.second), root );
+    if ( !parsesuccess )
+    {
+        std::cout  << "Failed to parse address list\n" << reader.getFormattedErrorMessages();
+        return addressBook;
+    }
+    
+    const Json::Value addresses = root["addresses"];
+    for ( int index = 0; index < addresses.size(); ++index ){  // Iterates over the sequence elements.
+        
+        std::string dirtyLabel = addresses[index].get("label", "").asString();
+        dirtyLabel.erase(std::remove(dirtyLabel.begin(), dirtyLabel.end(), '\n'), dirtyLabel.end());
+        std::string cleanRipe(dirtyLabel);
+        
+        BitMessageAddressBookEntry address(addresses[index].get("address", "").asString(), base64(cleanRipe, true));
+        
+        addressBook.push_back(address);
+        
+    }
+    
+    return addressBook;
+    
+};
 
 bool BitMessage::addAddressBookEntry(std::string address, base64 label){
 

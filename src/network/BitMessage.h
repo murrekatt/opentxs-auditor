@@ -59,6 +59,25 @@ private:
 typedef std::vector<BitMessageAddressBookEntry> BitMessageAddressBook;
 
 
+class BitMessageSubscription {
+    
+public:
+    
+    BitMessageSubscription(std::string address, bool enabled, base64 label) : m_address(address), m_enabled(enabled), m_label(label) {};
+    
+    std::string getAddress(){return m_address;};
+    bool getEnabled(){return m_enabled;};
+    base64 getLabel(){return m_label;};
+    
+private:
+    
+    std::string m_address;
+    bool m_enabled;
+    base64 m_label;
+    
+};
+
+typedef std::vector<BitMessageSubscription> BitMessageSubscriptionList;
 
 
 class BitInboxMessage {
@@ -193,7 +212,7 @@ public:
     
     // Subscription Management
     
-    void listSubscriptions();
+    BitMessageSubscriptionList listSubscriptions();
     
     bool addSubscription(std::string address, base64 label);
     bool addSubscription(std::string address, std::string label){return addSubscription(address, base64(label));};
@@ -227,7 +246,7 @@ public:
     BitMessageAddress getDeterministicAddress(base64 password, int addressVersionNumber=4, int streamNumber=1);
     BitMessageAddress getDeterministicAddress(std::string password, int addressVersionNumber=4, int streamNumber=1){return getDeterministicAddress(base64(password), addressVersionNumber, streamNumber);};
     
-    void listAddressBookEntries();
+    BitMessageAddressBook listAddressBookEntries();
     
     bool addAddressBookEntry(std::string address, base64 label);
     bool addAddressBookEntry(std::string address, std::string label){return addAddressBookEntry(address, base64(label));};
