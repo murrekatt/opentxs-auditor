@@ -160,11 +160,11 @@ public:
 
     
     // Message Management
-    void sendMessage(std::string fromAddress, std::string toAddress, base64 subject, base64 message, int encodingType=2);
-    void sendMessage(std::string fromAddress, std::string toAddress, std::string subject, std::string message, int encodingType=2){sendMessage(fromAddress, toAddress, base64(subject), base64(message), encodingType);};
+    std::string sendMessage(std::string fromAddress, std::string toAddress, base64 subject, base64 message, int encodingType=2);
+    std::string sendMessage(std::string fromAddress, std::string toAddress, std::string subject, std::string message, int encodingType=2){return sendMessage(fromAddress, toAddress, base64(subject), base64(message), encodingType);};
 
-    void sendBroadcast(std::string fromAddress, base64 subject, base64 message, int encodingType=2);
-    void sendBroadcast(std::string fromAddress, std::string subject, std::string message, int encodingType=2){sendBroadcast(fromAddress, base64(subject), base64(message), encodingType);};
+    std::string sendBroadcast(std::string fromAddress, base64 subject, base64 message, int encodingType=2);
+    std::string sendBroadcast(std::string fromAddress, std::string subject, std::string message, int encodingType=2){return sendBroadcast(fromAddress, base64(subject), base64(message), encodingType);};
 
     
     // Subscription Management

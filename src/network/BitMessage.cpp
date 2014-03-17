@@ -372,9 +372,66 @@ bool BitMessage::trashSentMessageByAckData(std::string ackData){
 
 // Message Management
 
-void BitMessage::sendMessage(std::string fromAddress, std::string toAddress, base64 subject, base64 message, int encodingType){};
+std::string BitMessage::sendMessage(std::string fromAddress, std::string toAddress, base64 subject, base64 message, int encodingType){
 
-void BitMessage::sendBroadcast(std::string fromAddress, base64 subject, base64 message, int encodingType){};
+    Parameters params;
+    params.push_back(ValueString(fromAddress));
+    params.push_back(ValueString(toAddress));
+    params.push_back(ValueString(subject.encoded()));
+    params.push_back(ValueString(message.encoded()));
+    params.push_back(ValueInt(encodingType));
+
+    
+    XmlResponse result = m_xmllib->run("sendMessage", params);
+    
+    if(result.first == false){
+        std::cout << "Error: sendMessage failed" << std::endl;
+        return "";
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return "";
+        }
+    }
+    
+    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
+    
+    return std::string(ValueString(result.second));
+
+};
+
+std::string BitMessage::sendBroadcast(std::string fromAddress, base64 subject, base64 message, int encodingType){
+
+    Parameters params;
+    params.push_back(ValueString(fromAddress));
+    params.push_back(ValueString(subject.encoded()));
+    params.push_back(ValueString(message.encoded()));
+    params.push_back(ValueInt(encodingType));
+    
+    
+    XmlResponse result = m_xmllib->run("sendBroadcast", params);
+    
+    if(result.first == false){
+        std::cout << "Error: sendBroadcast failed" << std::endl;
+        return "";
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return "";
+        }
+    }
+    
+    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
+    
+    return std::string(ValueString(result.second));
+
+};
 
 // Subscription Management
 
