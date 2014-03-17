@@ -128,6 +128,27 @@ private:
 typedef std::vector<BitSentMessage> BitMessageOutbox;
 
 
+class BitDecodedAddress {
+    
+public:
+    
+    BitDecodedAddress(std::string status, int addressVersion, std::string ripe, int streamNumber) : m_status(status), m_addressVersion(addressVersion), m_ripe(ripe), m_streamNumber(streamNumber) {};
+    
+    std::string getStatus(){return m_status;};
+    int getAddressVersion(){return m_addressVersion;};
+    std::string getRipe(){return m_ripe;};
+    int getStreamNumber(){return m_streamNumber;};
+    
+    
+private:
+    
+    std::string m_status;
+    int m_addressVersion;
+    std::string m_ripe;
+    int m_streamNumber;
+    
+};
+
 
 
 class BitMessage : public NetworkModule {
@@ -215,7 +236,7 @@ public:
     
     bool deleteAddress(BitMessageAddress address);
     
-    void decodeAddress(BitMessageAddress address);
+    BitDecodedAddress decodeAddress(BitMessageAddress address);
     
     
     // Other API Commands

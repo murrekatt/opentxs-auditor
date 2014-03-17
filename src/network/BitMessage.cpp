@@ -752,12 +752,52 @@ bool BitMessage::deleteAddress(std::string address){
             return false;
         }
     }
-        
+    
     return true;
 
 };
 
-void BitMessage::decodeAddress(std::string address){};
+BitDecodedAddress BitMessage::decodeAddress(std::string address){
+
+    Parameters params;
+    
+    params.push_back(ValueString(address));
+    
+    XmlResponse result = m_xmllib->run("decodeAddress", params);
+    
+    if(result.first == false){
+        std::cout << "Error Accessing BitMessage API" << std::endl;
+        return BitDecodedAddress("", 0, "", 0);
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return BitDecodedAddress("", 0, "", 0);
+        }
+    }
+    
+    
+    Json::Value root;
+    Json::Reader reader;
+    
+    bool parsesuccess = reader.parse( ValueString(result.second), root );
+    if ( !parsesuccess )
+    {
+        std::cout  << "Failed to parse configuration\n" << reader.getFormattedErrorMessages();
+        return BitDecodedAddress("", 0, "", 0);
+    }
+    
+    const Json::Value decodedAddress = root;
+    
+    std::string dirtyRipe = decodedAddress.get("ripe", "").asString();
+    dirtyRipe.erase(std::remove(dirtyRipe.begin(), dirtyRipe.end(), '\n'), dirtyRipe.end());
+    std::string cleanRipe(dirtyRipe);
+    
+    return BitDecodedAddress(decodedAddress.get("status", "").asString(), decodedAddress.get("addressVersion", "").asInt(), cleanRipe, decodedAddress.get("streamNumber", "").asInt());
+
+};
 
 
 
