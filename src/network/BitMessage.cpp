@@ -129,15 +129,35 @@ BitInboxMessage BitMessage::getInboxMessageByID(std::string msgID, bool setRead)
 };
 
 
-void BitMessage::getSentMessageByAckData(std::string ackData){
 
+void BitMessage::getAllSentMessages(){
 
+    Parameters params;
+    
+    XmlResponse result = m_xmllib->run("getAllSentMessages", params);
+    
+    if(result.first == false){
+        std::cout << "Error: getAllSentMessages failed" << std::endl;
+        BitInboxMessage message("", "", "", base64(""), base64(""), 0, 0, false);
+        return ;
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            BitInboxMessage message("", "", "", base64(""), base64(""), 0, 0, false);
+            return;
+        }
+    }
 
+    std::cout << std::string(ValueString(result.second)) << std::endl;
+    
 };
 
-void BitMessage::getAllSentMessages(){};
-
 void BitMessage::getSentMessageByID(std::string msgID){};
+
+void BitMessage::getSentMessageByAckData(std::string ackData){};
 
 void BitMessage::getSentMessagesBySender(std::string address){};
 

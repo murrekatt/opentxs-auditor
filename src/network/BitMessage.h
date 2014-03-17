@@ -96,7 +96,30 @@ class BitSentMessage {
     
 public:
     
+    BitSentMessage(std::string msgID, BitMessageAddress toAddress, BitMessageAddress fromAddress, base64 subject, base64 message, int encodingType, std::time_t lastActionTime, std::string status, std::string ackData) : m_msgID(msgID), m_toAddress(toAddress), m_fromAddress(fromAddress), m_subject(subject), m_message(message), m_encodingType(encodingType), m_lastActionTime(lastActionTime), m_status(status), m_ackData(ackData) {};
+    
+    std::string getMsgID(){return m_msgID;};
+    BitMessageAddress getToAddress(){return m_toAddress;};
+    BitMessageAddress getFromAddress(){return m_fromAddress;};
+    base64 getSubject(){return m_subject;};
+    base64 getMessage(){return m_message;};
+    int getEncodingType(){return m_encodingType;};
+    std::time_t getLastActionTime(){return m_lastActionTime;};
+    std::string getStatus(){return m_status;};
+    std::string getAckData(){return m_ackData;};
+
+    
 private:
+    
+    std::string m_msgID;
+    BitMessageAddress m_toAddress;
+    BitMessageAddress m_fromAddress;
+    base64 m_subject;
+    base64 m_message;
+    int m_encodingType;
+    std::time_t m_lastActionTime;
+    std::string m_status;
+    std::string m_ackData;
     
 };
 
@@ -123,12 +146,12 @@ public:
     
     BitInboxMessage getInboxMessageByID(std::string msgID, bool setRead=true);
     
-    void getSentMessageByAckData(std::string ackData);
-    
     void getAllSentMessages();
     
     void getSentMessageByID(std::string msgID);
-    
+
+    void getSentMessageByAckData(std::string ackData);
+
     void getSentMessagesBySender(std::string address);
     
     bool trashMessage(std::string msgID);
