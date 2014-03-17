@@ -142,21 +142,21 @@ public:
 
     // Inbox Management
     
-    std::vector<BitInboxMessage> getAllInboxMessages();
+    BitMessageInbox getAllInboxMessages();
     
     BitInboxMessage getInboxMessageByID(std::string msgID, bool setRead=true);
     
-    void getAllSentMessages();
+    BitMessageOutbox getAllSentMessages();
     
-    void getSentMessageByID(std::string msgID);
+    BitSentMessage getSentMessageByID(std::string msgID);
 
-    void getSentMessageByAckData(std::string ackData);
+    BitSentMessage getSentMessageByAckData(std::string ackData);
 
-    void getSentMessagesBySender(std::string address);
+    std::vector<BitSentMessage> getSentMessagesBySender(std::string address);
     
     bool trashMessage(std::string msgID);
     
-    void trashSentMessageByAckData(std::string ackData);
+    bool trashSentMessageByAckData(std::string ackData);
 
     
     // Message Management

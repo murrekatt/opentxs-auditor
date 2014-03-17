@@ -43,7 +43,7 @@ int main(int argc, char * argv[])
     
     std::cout << std::endl;
     std::cout << "BitMessage getAllSentMessages Test" << std::endl;
-    dynamic_cast<BitMessage*>(netModule)->getAllSentMessages();
+    //std::cout << dynamic_cast<BitMessage*>(netModule)->getSentMessageByID().getMessage().decoded() << std::endl;
     //std::cout << "Message on last received message is: " << std::endl;
     //std::cout << dynamic_cast<BitMessage*>(netModule)->getInboxMessageByID((dynamic_cast<BitMessage*>(netModule)->getAllInboxMessages().at(0).getMsgID())).getMessage().decoded() << std::endl;
     //dynamic_cast<BitMessage*>(netModule)->createChan(base64("passwordl"));

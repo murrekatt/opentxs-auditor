@@ -130,16 +130,16 @@ BitInboxMessage BitMessage::getInboxMessageByID(std::string msgID, bool setRead)
 
 
 
-void BitMessage::getAllSentMessages(){
+BitMessageOutbox BitMessage::getAllSentMessages(){
 
     Parameters params;
+    BitMessageOutbox outbox;
     
     XmlResponse result = m_xmllib->run("getAllSentMessages", params);
     
     if(result.first == false){
-        std::cout << "Error: getAllSentMessages failed" << std::endl;
-        BitInboxMessage message("", "", "", base64(""), base64(""), 0, 0, false);
-        return ;
+        std::cout << "Error: getAllSentMessages failed" << std::endl;;
+        return outbox;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
@@ -147,19 +147,172 @@ void BitMessage::getAllSentMessages(){
         if(found!=std::string::npos){
             std::cout << std::string(ValueString(result.second)) << std::endl;
             BitInboxMessage message("", "", "", base64(""), base64(""), 0, 0, false);
-            return;
+            return outbox;
         }
     }
+    
+    Json::Value root;
+    Json::Reader reader;
+    
+    const Json::Value sentMessages = root["sentMessages"];
+    for ( int index = 0; index < sentMessages.size(); ++index ){  // Iterates over the sequence elements.
+        
+        // We need to sanitize our string, or else it will get cut off because of the newlines.
+        std::string dirtyMessage = sentMessages[index].get("message", "").asString();
+        dirtyMessage.erase(std::remove(dirtyMessage.begin(), dirtyMessage.end(), '\n'), dirtyMessage.end());
+        base64 cleanMessage(dirtyMessage, true);
+        
+        BitSentMessage message(sentMessages[index].get("msgid", "").asString(), sentMessages[index].get("toAddress", "").asString(), sentMessages[index].get("fromAddress", "").asString(), base64(sentMessages[index].get("subject", "").asString(), true), cleanMessage, sentMessages[index].get("encodingType", 0).asInt(), std::atoi(sentMessages[index].get("lastActionTime", 0).asString().c_str()), sentMessages[index].get("status", false).asString(), sentMessages[index].get("ackData", false).asString());
+        
+        outbox.push_back(message);
+        
+    }
 
-    std::cout << std::string(ValueString(result.second)) << std::endl;
+   return outbox;
     
 };
 
-void BitMessage::getSentMessageByID(std::string msgID){};
 
-void BitMessage::getSentMessageByAckData(std::string ackData){};
+BitSentMessage BitMessage::getSentMessageByID(std::string msgID){
+    
+    Parameters params;
+    
+    params.push_back(ValueString(msgID));
+    
+    XmlResponse result = m_xmllib->run("getSentMessageByID", params);
+    
+    if(result.first == false){
+        std::cout << "Error: getSentMessageByID failed" << std::endl;;
+        return BitSentMessage("", "", "", base64(""), base64(""), 0, 0, "", "");
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return BitSentMessage("", "", "", base64(""), base64(""), 0, 0, "", "");
+        }
+    }
+    
+    
+    Json::Value root;
+    Json::Reader reader;
+    
+    bool parsesuccess = reader.parse( ValueString(result.second), root );
+    if ( !parsesuccess )
+    {
+        std::cout  << "Failed to parse outbox\n" << reader.getFormattedErrorMessages();
+        return BitSentMessage("", "", "", base64(""), base64(""), 0, 0, "", "");
+    }
+    
+    const Json::Value sentMessage = root["sentMessage"];
+    
+    std::string dirtyMessage = sentMessage[0].get("message", "").asString();
+    dirtyMessage.erase(std::remove(dirtyMessage.begin(), dirtyMessage.end(), '\n'), dirtyMessage.end());
+    base64 cleanMessage(dirtyMessage, true);
+    
+    
+    BitSentMessage message(sentMessage[0].get("msgid", "").asString(), sentMessage[0].get("toAddress", "").asString(), sentMessage[0].get("fromAddress", "").asString(), base64(sentMessage[0].get("subject", "").asString(), true), cleanMessage, sentMessage[0].get("encodingType", 0).asInt(), sentMessage[0].get("lastActionTime", 0).asInt(), sentMessage[0].get("status", false).asString(), sentMessage[0].get("ackData", false).asString());
+    
+    return message;
+    
+};
 
-void BitMessage::getSentMessagesBySender(std::string address){};
+
+
+BitSentMessage BitMessage::getSentMessageByAckData(std::string ackData){
+
+    Parameters params;
+    
+    params.push_back(ValueString(ackData));
+    
+    XmlResponse result = m_xmllib->run("getSentMessageByAckData", params);
+    
+    if(result.first == false){
+        std::cout << "Error: getSentMessageByAckData failed" << std::endl;;
+        return BitSentMessage("", "", "", base64(""), base64(""), 0, 0, "", "");
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return BitSentMessage("", "", "", base64(""), base64(""), 0, 0, "", "");
+        }
+    }
+    
+    
+    Json::Value root;
+    Json::Reader reader;
+    
+    bool parsesuccess = reader.parse( ValueString(result.second), root );
+    if ( !parsesuccess )
+    {
+        std::cout  << "Failed to parse outbox\n" << reader.getFormattedErrorMessages();
+        return BitSentMessage("", "", "", base64(""), base64(""), 0, 0, "", "");
+    }
+    
+    const Json::Value sentMessage = root["sentMessage"];
+    
+    std::string dirtyMessage = sentMessage[0].get("message", "").asString();
+    dirtyMessage.erase(std::remove(dirtyMessage.begin(), dirtyMessage.end(), '\n'), dirtyMessage.end());
+    base64 cleanMessage(dirtyMessage, true);
+    
+    
+    BitSentMessage message(sentMessage[0].get("msgid", "").asString(), sentMessage[0].get("toAddress", "").asString(), sentMessage[0].get("fromAddress", "").asString(), base64(sentMessage[0].get("subject", "").asString(), true), cleanMessage, sentMessage[0].get("encodingType", 0).asInt(), sentMessage[0].get("lastActionTime", 0).asInt(), sentMessage[0].get("status", false).asString(), sentMessage[0].get("ackData", false).asString());
+    
+    return message;
+    
+};
+
+
+
+std::vector<BitSentMessage> BitMessage::getSentMessagesBySender(std::string address){
+
+    
+    Parameters params;
+    BitMessageOutbox outbox;
+    
+    params.push_back(ValueString(address));
+    
+    XmlResponse result = m_xmllib->run("getSentMessagesBySender", params);
+    
+    if(result.first == false){
+        std::cout << "Error: getAllSentMessages failed" << std::endl;;
+        return outbox;
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            BitInboxMessage message("", "", "", base64(""), base64(""), 0, 0, false);
+            return outbox;
+        }
+    }
+    
+    Json::Value root;
+    Json::Reader reader;
+    
+    const Json::Value sentMessages = root["sentMessages"];
+    for ( int index = 0; index < sentMessages.size(); ++index ){  // Iterates over the sequence elements.
+        
+        // We need to sanitize our string, or else it will get cut off because of the newlines.
+        std::string dirtyMessage = sentMessages[index].get("message", "").asString();
+        dirtyMessage.erase(std::remove(dirtyMessage.begin(), dirtyMessage.end(), '\n'), dirtyMessage.end());
+        base64 cleanMessage(dirtyMessage, true);
+        
+        BitSentMessage message(sentMessages[index].get("msgid", "").asString(), sentMessages[index].get("toAddress", "").asString(), sentMessages[index].get("fromAddress", "").asString(), base64(sentMessages[index].get("subject", "").asString(), true), cleanMessage, sentMessages[index].get("encodingType", 0).asInt(), std::atoi(sentMessages[index].get("lastActionTime", 0).asString().c_str()), sentMessages[index].get("status", false).asString(), sentMessages[index].get("ackData", false).asString());
+        
+        outbox.push_back(message);
+        
+    }
+    
+    return outbox;
+
+};
+
+
 
 bool BitMessage::trashMessage(std::string msgID){
 
@@ -187,7 +340,35 @@ bool BitMessage::trashMessage(std::string msgID){
     
 };
 
-void BitMessage::trashSentMessageByAckData(std::string ackData){};
+
+
+bool BitMessage::trashSentMessageByAckData(std::string ackData){
+
+    Parameters params;
+    params.push_back(ValueString(ackData));
+    
+    XmlResponse result = m_xmllib->run("trashSentMessageByAckData", params);
+    
+    if(result.first == false){
+        std::cout << "Error: trashSentMessageByAckData failed" << std::endl;
+        return false;
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cout << std::string(ValueString(result.second)) << std::endl;
+            return false;
+        }
+    }
+    
+    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
+    
+    return true;
+
+};
+
+
 
 // Message Management
 
