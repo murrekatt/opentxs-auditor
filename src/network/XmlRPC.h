@@ -13,6 +13,7 @@
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/client.hpp>
 #include <xmlrpc-c/timeout.hpp>
+#include <xmlrpc-c/xml.hpp>
 
 #if MSVCRT
 #  define WIN32_LEAN_AND_MEAN

@@ -8,6 +8,7 @@
 #include "Network.h"
 #include "XmlRPC.h"
 #include "base64.h"
+#include "WorkQueue.h"
 
 
 typedef std::string BitMessageAddress;

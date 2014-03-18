@@ -980,6 +980,12 @@ int BitMessage::add(int x, int y){
     params.push_back(ValueInt(x));
     params.push_back(ValueInt(y));
     
+    /*
+    xmlrpc_c::value_array varray(params);
+    std::vector<xmlrpc_c::value> const testVector(varray.vectorValueValue());
+    std::cout << std::to_string(ValueInt(testVector.at(0))) << std::endl; 
+     */
+    
     XmlResponse result = m_xmllib->run("add", params);
     
     if(result.first == false){
@@ -994,6 +1000,7 @@ int BitMessage::add(int x, int y){
             return -1;
         }
         std::cout << "Unexpected Response to API Command: add" << std::endl;
+        std::cout << std::string(ValueString(result.second)) << std::endl;
         return -1;
     }
     else{

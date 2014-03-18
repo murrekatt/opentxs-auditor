@@ -42,8 +42,10 @@ XmlResponse XmlRPC::run(std::string methodName, std::vector<xmlrpc_c::value> par
 
         xmlrpc_c::paramList params;
         for(int i; i < paramsize; i++){
-            params.add(xmlrpc_c::value(parameters.at(i)));
+            params.addc(parameters.at(i));
+            //std::cout << parameters.at(i).type() << std::endl;
         }
+        params.verifyEnd(paramsize);
         
         // Construct the Server URL
         std::string const serverUrl(m_serverurl + ":" + std::to_string(m_port));
