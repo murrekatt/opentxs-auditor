@@ -34,15 +34,24 @@ XmlResponse XmlRPC::run(std::string methodName, std::vector<xmlrpc_c::value> par
 
         // Parse through our parameters list
         
-        // ** Need to debug why the add method fails when
-        //      we reference i < parameters.size()
-        //      instead of referencing int paramsize to parameters.size()
+        // This series of workarounds will be removed pending feedback from the xmlrpc_c maintainer.
         
         int paramsize = parameters.size();
 
         xmlrpc_c::paramList params;
         for(int i; i < paramsize; i++){
-            params.addc(parameters.at(i));
+            xmlrpc_c::value newParameter(parameters.at(i));
+            params.addc(newParameter);
+
+/*
+            if(newParameter.type() == xmlrpc_c::value::TYPE_INT){
+                params.addc(newParameter);
+               // std::cout << std::to_string(xmlrpc_c::value_int(parameters.at(i))) << std::endl;
+            }
+            else
+                params.addc(newParameter);
+  
+ */
             //std::cout << parameters.at(i).type() << std::endl;
         }
         params.verifyEnd(paramsize);

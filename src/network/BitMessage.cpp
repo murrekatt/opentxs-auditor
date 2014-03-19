@@ -979,13 +979,7 @@ int BitMessage::add(int x, int y){
     Parameters params;
     params.push_back(ValueInt(x));
     params.push_back(ValueInt(y));
-    
-    /*
-    xmlrpc_c::value_array varray(params);
-    std::vector<xmlrpc_c::value> const testVector(varray.vectorValueValue());
-    std::cout << std::to_string(ValueInt(testVector.at(0))) << std::endl; 
-     */
-    
+
     XmlResponse result = m_xmllib->run("add", params);
     
     if(result.first == false){
