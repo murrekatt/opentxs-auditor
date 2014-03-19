@@ -15,7 +15,7 @@ env.Append(CPPPATH = ['/usr/local/include/','src','src/crypto','src/parsers','sr
 env.Append(LIBPATH = ['/usr/local/lib/'])
 env.Append(LIBS = ['xmlrpc_client++','boost_system','boost_program_options'])
 #env.Append(CXXFLAGS = ['-std=c++11','-stdlib=libc++'])
-#env.Append(CXXFLAGS = ['-std=c++11'])
+env.Append(CXXFLAGS = ['-std=c++11'])
 
 
 
@@ -25,7 +25,7 @@ sources = Split("""
 src/parsers/MainConfigParser.cpp
 src/parsers/jsoncpp/jsoncpp.cpp
 src/network/Network.cpp
-src/network/Bitmessage.cpp
+src/network/BitMessage.cpp
 src/network/XmlRPC.cpp
 src/crypto/base64.cpp
 src/main.cpp

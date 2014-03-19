@@ -34,27 +34,12 @@ XmlResponse XmlRPC::run(std::string methodName, std::vector<xmlrpc_c::value> par
 
         // Parse through our parameters list
         
-        // This series of workarounds will be removed pending feedback from the xmlrpc_c maintainer.
-        
-        int paramsize = parameters.size();
-
         xmlrpc_c::paramList params;
-        for(int i; i < paramsize; i++){
+        
+        for(int i=0; i < parameters.size(); i++){
             xmlrpc_c::value newParameter(parameters.at(i));
             params.addc(newParameter);
-
-/*
-            if(newParameter.type() == xmlrpc_c::value::TYPE_INT){
-                params.addc(newParameter);
-               // std::cout << std::to_string(xmlrpc_c::value_int(parameters.at(i))) << std::endl;
-            }
-            else
-                params.addc(newParameter);
-  
- */
-            //std::cout << parameters.at(i).type() << std::endl;
         }
-        params.verifyEnd(paramsize);
         
         // Construct the Server URL
         std::string const serverUrl(m_serverurl + ":" + std::to_string(m_port));

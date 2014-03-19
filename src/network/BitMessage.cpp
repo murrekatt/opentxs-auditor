@@ -999,9 +999,7 @@ int BitMessage::add(int x, int y){
     }
     else{
         return ValueInt(result.second);
-        
     }
-    
 };
 
 
