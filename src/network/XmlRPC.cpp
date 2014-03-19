@@ -34,15 +34,11 @@ XmlResponse XmlRPC::run(std::string methodName, std::vector<xmlrpc_c::value> par
 
         // Parse through our parameters list
         
-        // ** Need to debug why the add method fails when
-        //      we reference i < parameters.size()
-        //      instead of referencing int paramsize to parameters.size()
-        
-        int paramsize = parameters.size();
-
         xmlrpc_c::paramList params;
-        for(int i; i < paramsize; i++){
-            params.add(xmlrpc_c::value(parameters.at(i)));
+        
+        for(int i=0; i < parameters.size(); i++){
+            xmlrpc_c::value newParameter(parameters.at(i));
+            params.addc(newParameter);
         }
         
         // Construct the Server URL

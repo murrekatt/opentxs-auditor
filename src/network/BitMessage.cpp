@@ -979,7 +979,7 @@ int BitMessage::add(int x, int y){
     Parameters params;
     params.push_back(ValueInt(x));
     params.push_back(ValueInt(y));
-    
+
     XmlResponse result = m_xmllib->run("add", params);
     
     if(result.first == false){
@@ -994,13 +994,12 @@ int BitMessage::add(int x, int y){
             return -1;
         }
         std::cout << "Unexpected Response to API Command: add" << std::endl;
+        std::cout << std::string(ValueString(result.second)) << std::endl;
         return -1;
     }
     else{
         return ValueInt(result.second);
-        
     }
-    
 };
 
 
