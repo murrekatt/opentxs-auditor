@@ -12,18 +12,88 @@
 #include <utility>
 #include <algorithm>
 
+#include<boost/tokenizer.hpp>
 
-BitMessage::BitMessage(std::string Host, int Port, std::string Username, std::string Pass) : m_host(Host), m_port(Port), m_username(Username), m_pass(Pass) {
+
+BitMessage::BitMessage(std::string commstring) : NetworkModule(commstring) {
+
+    std::vector<std::string> parsedList;
+    boost::tokenizer<boost::escaped_list_separator<char> > tokens(commstring);
+    
+    for(boost::tokenizer<boost::escaped_list_separator<char> >::iterator it=tokens.begin(); it!=tokens.end();++it){
+        parsedList.push_back(*it);
+    }
+    
+    m_host = parsedList.at(0);
+    m_port = std::atoi(parsedList.at(1).c_str());
+    m_username = parsedList.at(2);
+    m_pass = parsedList.at(3);
     
     m_xmllib = new XmlRPC(m_host, m_port, true, 10000);
     m_xmllib->setAuth(m_username, m_pass);
     
+    
+    // Runs to setup our counter
+    accessible();
 }
 
 
 BitMessage::~BitMessage(){
     delete m_xmllib;
 }
+
+
+// Virtual Functions
+
+bool BitMessage::accessible(){
+    
+    if(helloWorld("Hello","World") != "Hello-World"){
+        setServerAlive(false);
+        return false;
+    }
+    else{
+        setServerAlive(true);
+        return true;
+    }
+}
+
+
+std::string BitMessage::createAddress(std::string options=""){
+    
+    if(options == ""){
+        return createRandomAddress();
+    }
+    else
+        return "";  // To Be Implemented
+    
+}
+
+std::string BitMessage::createDeterministicAddress(std::string key){
+    
+    // We will Implement more advanced parsing of the key soon
+    return getDeterministicAddress(base64(key));
+    
+}
+
+
+bool BitMessage::addressAccessible(std::string address){
+    
+    BitMessageIdentities identities(listAddresses());
+    
+    for(int x = 0; x < identities.size(); x++){
+            if(identities.at(x).getAddress() == address){
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+bool BitMessage::publishSupport(){
+    return true;
+}
+
 
 
 // Inbox Management
@@ -616,7 +686,7 @@ BitMessageIdentities BitMessage::listAddresses(){
     
     std::vector<xmlrpc_c::value> params;
     BitMessageIdentities responses;
-    
+
     XmlResponse result = m_xmllib->run("listAddresses2", params);
     
     if(result.first == false){
@@ -945,33 +1015,32 @@ BitDecodedAddress BitMessage::decodeAddress(std::string address){
 
 // Other API Commands
 
-bool BitMessage::testApi(){
+
+
+std::string BitMessage::helloWorld(std::string first, std::string second){
     
     Parameters params;
-    params.push_back(ValueString("Hello"));
-    params.push_back(ValueString("Auditor"));
+    params.push_back(ValueString(first));
+    params.push_back(ValueString(second));
     
     XmlResponse result = m_xmllib->run("helloWorld", params);
     
     if(result.first == false){
         std::cout << "Error Accessing BitMessage API" << std::endl;
-        return false;
+        return "";
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
             std::cout << std::string(ValueString(result.second)) << std::endl;
-            return false;
+            return "";
         }
     }
     
-    std::cout << "BitMessage API is Active: " << std::string(ValueString(result.second)) << std::endl;
-    
-    return true;
+    return std::string(ValueString(result.second));
     
 }
-
 
 
 int BitMessage::add(int x, int y){
@@ -1000,6 +1069,7 @@ int BitMessage::add(int x, int y){
     else{
         return ValueInt(result.second);
     }
+    
 };
 
 
@@ -1030,4 +1100,18 @@ std::string BitMessage::getStatus(std::string ackData){
 
 };
 
+
+
+void BitMessage::setServerAlive(bool alive){
+    
+    if(alive){
+        NetCounter::setAlive();
+        m_serverAvailable = true;
+    }
+    else{
+        NetCounter::dead();
+        m_serverAvailable = false;
+    }
+    
+}
 

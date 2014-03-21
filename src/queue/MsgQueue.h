@@ -1,6 +1,6 @@
 //
 //  MsgQueue.h
-//  
+//
 
 #include <thread>
 #include <queue>
