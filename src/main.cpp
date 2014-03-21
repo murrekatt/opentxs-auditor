@@ -26,7 +26,7 @@ int main(int argc, char * argv[])
         // Echo to BitMessage (or other communication layer) Network
     
     NetworkModule *netModule = mainConfigParser.passNetworkModule();
-    if(netModule->testApi()){
+    if(netModule->accessible()){
         std::cout << "Transport Layer is Accessible" << std::endl;
     }
     else{
@@ -34,17 +34,26 @@ int main(int argc, char * argv[])
         exit(0);
     }
     
-    std::cout << "BitMessage listAddresses Test" << std::endl;
-    dynamic_cast<BitMessage*>(netModule)->listAddresses();
+    std::cout << std::endl;
+    std::cout << "Running Network Module Tests:" << std::endl;
+    std::cout << std::endl;
+    
+    std::cout << "Number of Modules Loaded: " << netModule->modulesLoaded() << std::endl;
+    std::cout << "Number of Modules Alive: " << netModule->modulesAlive() << std::endl;
+    std::cout << "Network Accessibiility Test: " << netModule->accessible() << std::endl;
+    std::cout << "Number of Modules Alive: " << netModule->modulesAlive() << std::endl;
+
+    std::cout << "Address Accesibility Test: " << netModule->addressAccessible("BM-2cWNiCJahFd26v5ev5jH1GzKMNWiwbimDJ") << std::endl;
+    std::cout << "Check Publish Support: " << netModule->publishSupport() << std::endl;
+    
+    
+    
+    
     
     std::cout << std::endl;
-    std::cout << "BitMessage add Test" << std::endl;
-    std::cout << dynamic_cast<BitMessage*>(netModule)->add(2, 3) << std::endl;
-    
-    std::cout << std::endl;
-    std::cout << dynamic_cast<BitMessage*>(netModule)->listSubscriptions().at(0).getLabel().decoded() << std::endl;
-    std::cout << "BitMessage listAddressBookEntries Test" << std::endl;
-    std::cout << dynamic_cast<BitMessage*>(netModule)->listAddressBookEntries().at(0).getLabel().decoded() << std::endl;
+    //std::cout << "BitMessage listAddressBookEntries Test" << std::endl;
+    //std::cout << dynamic_cast<BitMessage*>(netModule)->listSubscriptions().at(0).getLabel().decoded() << std::endl;
+    //std::cout << dynamic_cast<BitMessage*>(netModule)->listAddressBookEntries().at(0).getLabel().decoded() << std::endl;
     //std::cout << dynamic_cast<BitMessage*>(netModule)->sendMessage("BM-", "BM-", base64("Testing"), base64("Knock if you receive this message?")) << std::endl;
     //std::cout << dynamic_cast<BitMessage*>(netModule)->getSentMessageByID().getMessage().decoded() << std::endl;
     //std::cout << "Message on last received message is: " << std::endl;

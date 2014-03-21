@@ -9,6 +9,7 @@
 #include "XmlRPC.h"
 #include "base64.h"
 #include "WorkQueue.h"
+#include "MsgQueue.h"
 
 
 typedef std::string BitMessageAddress;
@@ -175,8 +176,21 @@ class BitMessage : public NetworkModule {
 
 public:
     
-    BitMessage(std::string Host, int Port, std::string Username, std::string Pass);
+    BitMessage(std::string commstring);
     ~BitMessage();
+    
+    
+    // Virtual Function Implementations
+    bool accessible();
+    
+    std::string moduleType(){return "BitMessage";};
+    
+    std::string createAddress(std::string options);
+    std::string createDeterministicAddress(std::string key);
+    
+    
+    bool addressAccessible(std::string address);
+    bool publishSupport();
     
     
     //
@@ -236,7 +250,7 @@ public:
     
     BitMessageIdentities listAddresses(); // This is technically "listAddresses2" in the API reference
     
-    BitMessageAddress createRandomAddress(base64 label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
+    BitMessageAddress createRandomAddress(base64 label=base64(""), bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
     BitMessageAddress createRandomAddress(std::string label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){return createRandomAddress(label, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);};
 
     // Warning - This is not guaranteed to return a filled vector if the call does not return any new addresses.
@@ -261,11 +275,10 @@ public:
     
     // Other API Commands
     
-    bool testApi();
-    
     int add(int x, int y);
     
     std::string getStatus(std::string ackData);
+    std::string helloWorld(std::string first, std::string second);
     
     
     // Extra BitMessage Options (some of these are pass-through functions not related to the API)
@@ -293,9 +306,14 @@ private:
     int m_port;
     std::string m_pass;
     std::string m_username;
-    
+
+    bool m_serverAvailable;
     
     // Communication Library, XmlRPC in this case
     XmlRPC *m_xmllib;
     
+    
+    // Private Helper Functions
+    
+    void setServerAlive(bool alive);
 };
