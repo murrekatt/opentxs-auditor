@@ -188,6 +188,30 @@ public:
     std::string createAddress(std::string options);
     std::string createDeterministicAddress(std::string key);
     
+    // Not yet implemented
+    
+    /*
+     
+    bool addressAccessible(std::string address){return false;};
+    virtual std::vector<std::string> getAddresses(){return std::vector<std::string>();};
+    
+    
+    virtual std::vector<NetworkMail> getInbox(std::string address){return std::vector<NetworkMail>();};
+    virtual std::vector<NetworkMail> getAllInboxes(){return std::vector<NetworkMail>();};
+    virtual std::vector<NetworkMail> getAllUnread(){return std::vector<NetworkMail>();};
+    
+    virtual bool checkNewMail(std::string address){return false;}; // checks for new mail, returns true if there is new mail in the queue.
+    virtual std::vector<NetworkMail> getUnreadMail(std::string address){return std::vector<NetworkMail>();}; // You don't want to have to do copies of your whole inbox for every download
+    virtual bool deleteMessage(NetworkMail message){return false;}; // Any part of the message should be able to be used to delete it from an inbox
+    virtual bool markRead(NetworkMail message, bool read=true){return false;}; // By default this marks a given message as read or not, not all API's will support this and should thus return false.
+    
+    virtual bool sendMail(NetworkMail message){return false;};
+    
+    virtual bool publishSupport(){return false;};
+    virtual std::vector<std::string> getSubscriptions(){return std::vector<std::string>();};
+    
+    */
+    
     
     bool addressAccessible(std::string address);
     bool publishSupport();

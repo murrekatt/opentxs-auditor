@@ -11,6 +11,7 @@
 #include <vector>
 #include <utility>
 #include <algorithm>
+#include <thread>
 
 #include<boost/tokenizer.hpp>
 
@@ -43,7 +44,12 @@ BitMessage::~BitMessage(){
 }
 
 
-// Virtual Functions
+
+
+/*
+ * Virtual Functions
+ */
+
 
 bool BitMessage::accessible(){
     
@@ -68,6 +74,7 @@ std::string BitMessage::createAddress(std::string options=""){
     
 }
 
+
 std::string BitMessage::createDeterministicAddress(std::string key){
     
     // We will Implement more advanced parsing of the key soon
@@ -89,14 +96,32 @@ bool BitMessage::addressAccessible(std::string address){
 }
 
 
-
 bool BitMessage::publishSupport(){
     return true;
 }
 
 
 
+
+/*
+ * Message Queueing
+ */
+
+
+
+
+
+
+
+
+
+
+/*
+ * Direct API Functions
+ */
+
 // Inbox Management
+
 
 std::vector<BitInboxMessage> BitMessage::getAllInboxMessages(){
 
@@ -147,8 +172,6 @@ std::vector<BitInboxMessage> BitMessage::getAllInboxMessages(){
 };
 
 
-
-
 BitInboxMessage BitMessage::getInboxMessageByID(std::string msgID, bool setRead){
 
     Parameters params;
@@ -197,7 +220,6 @@ BitInboxMessage BitMessage::getInboxMessageByID(std::string msgID, bool setRead)
     return message;
 
 };
-
 
 
 BitMessageOutbox BitMessage::getAllSentMessages(){
@@ -289,7 +311,6 @@ BitSentMessage BitMessage::getSentMessageByID(std::string msgID){
 };
 
 
-
 BitSentMessage BitMessage::getSentMessageByAckData(std::string ackData){
 
     Parameters params;
@@ -334,7 +355,6 @@ BitSentMessage BitMessage::getSentMessageByAckData(std::string ackData){
     return message;
     
 };
-
 
 
 std::vector<BitSentMessage> BitMessage::getSentMessagesBySender(std::string address){
@@ -383,7 +403,6 @@ std::vector<BitSentMessage> BitMessage::getSentMessagesBySender(std::string addr
 };
 
 
-
 bool BitMessage::trashMessage(std::string msgID){
 
     Parameters params;
@@ -407,7 +426,6 @@ bool BitMessage::trashMessage(std::string msgID){
     return true;
     
 };
-
 
 
 bool BitMessage::trashSentMessageByAckData(std::string ackData){
@@ -438,6 +456,7 @@ bool BitMessage::trashSentMessageByAckData(std::string ackData){
 
 // Message Management
 
+
 std::string BitMessage::sendMessage(std::string fromAddress, std::string toAddress, base64 subject, base64 message, int encodingType){
 
     Parameters params;
@@ -466,6 +485,7 @@ std::string BitMessage::sendMessage(std::string fromAddress, std::string toAddre
     return std::string(ValueString(result.second));
 
 };
+
 
 std::string BitMessage::sendBroadcast(std::string fromAddress, base64 subject, base64 message, int encodingType){
 
@@ -496,7 +516,9 @@ std::string BitMessage::sendBroadcast(std::string fromAddress, base64 subject, b
 };
 
 
+
 // Subscription Management
+
 
 BitMessageSubscriptionList BitMessage::listSubscriptions(){
 
@@ -546,7 +568,6 @@ BitMessageSubscriptionList BitMessage::listSubscriptions(){
 };
 
 
-
 bool BitMessage::addSubscription(std::string address, base64 label){
 
     Parameters params;
@@ -573,6 +594,7 @@ bool BitMessage::addSubscription(std::string address, base64 label){
 
 };
 
+
 bool BitMessage::deleteSubscription(std::string address){
 
     Parameters params;
@@ -598,7 +620,9 @@ bool BitMessage::deleteSubscription(std::string address){
 };
 
 
+
 // Channel Management
+
 
 std::string BitMessage::createChan(base64 password){
 
@@ -625,8 +649,6 @@ std::string BitMessage::createChan(base64 password){
 };
 
 
-
-
 bool BitMessage::joinChan(base64 password, std::string address){
 
     Parameters params;
@@ -651,7 +673,6 @@ bool BitMessage::joinChan(base64 password, std::string address){
     return true;
 
 };
-
 
 
 bool BitMessage::leaveChan(std::string address){
@@ -681,6 +702,7 @@ bool BitMessage::leaveChan(std::string address){
 
 
 // Address Management
+
 
 BitMessageIdentities BitMessage::listAddresses(){
     
@@ -725,7 +747,6 @@ BitMessageIdentities BitMessage::listAddresses(){
 }
 
 
-
 BitMessageAddress BitMessage::createRandomAddress(base64 label, bool eighteenByteRipe, int totalDifficulty, int smallMessageDifficulty){
 
     Parameters params;
@@ -753,7 +774,6 @@ BitMessageAddress BitMessage::createRandomAddress(base64 label, bool eighteenByt
     return std::string(ValueString(result.second));
 
 };
-
 
 
 std::vector<BitMessageAddress> BitMessage::createDeterministicAddresses(base64 password, int numberOfAddresses, int addressVersionNumber, int streamNumber, bool eighteenByteRipe, int totalDifficulty, int smallMessageDifficulty){
@@ -808,7 +828,6 @@ std::vector<BitMessageAddress> BitMessage::createDeterministicAddresses(base64 p
 };
 
 
-
 BitMessageAddress BitMessage::getDeterministicAddress(base64 password, int addressVersionNumber, int streamNumber){
     
     Parameters params;
@@ -835,8 +854,6 @@ BitMessageAddress BitMessage::getDeterministicAddress(base64 password, int addre
     return std::string(ValueString(result.second));
 
 };
-
-
 
 
 BitMessageAddressBook BitMessage::listAddressBookEntries(){
@@ -886,6 +903,7 @@ BitMessageAddressBook BitMessage::listAddressBookEntries(){
     return addressBook;
     
 };
+
 
 bool BitMessage::addAddressBookEntry(std::string address, base64 label){
 
@@ -942,7 +960,6 @@ bool BitMessage::deleteAddressBookEntry(std::string address){
 };
 
 
-
 bool BitMessage::deleteAddress(std::string address){
 
     Parameters params;
@@ -966,6 +983,7 @@ bool BitMessage::deleteAddress(std::string address){
     return true;
 
 };
+
 
 BitDecodedAddress BitMessage::decodeAddress(std::string address){
 
@@ -1014,7 +1032,6 @@ BitDecodedAddress BitMessage::decodeAddress(std::string address){
 
 
 // Other API Commands
-
 
 
 std::string BitMessage::helloWorld(std::string first, std::string second){
@@ -1073,8 +1090,6 @@ int BitMessage::add(int x, int y){
 };
 
 
-
-
 std::string BitMessage::getStatus(std::string ackData){
 
     Parameters params;
@@ -1099,7 +1114,6 @@ std::string BitMessage::getStatus(std::string ackData){
     return std::string(ValueString(result.second));
 
 };
-
 
 
 void BitMessage::setServerAlive(bool alive){
