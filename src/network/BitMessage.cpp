@@ -25,6 +25,9 @@ BitMessage::BitMessage(std::string commstring) : NetworkModule(commstring) {
         parsedList.push_back(*it);
     }
     
+    // Needs to be parsed properly, this will undoubtedly lead to errors when initializing BitMessage comms
+    // As it is prone to letting typo errors cause crashes.
+    
     m_host = parsedList.at(0);
     m_port = std::atoi(parsedList.at(1).c_str());
     m_username = parsedList.at(2);

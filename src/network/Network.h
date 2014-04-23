@@ -110,6 +110,11 @@ public:
     virtual bool publishSupport(){return false;};
     virtual std::vector<std::string> getSubscriptions(){return std::vector<std::string>();};
     
+    virtual bool createBroadcastAddress(){return false;};
+    
+    // Add functions to be able to import/export addressbook
+    
+    
 private:
     
     std::string m_commstring;
