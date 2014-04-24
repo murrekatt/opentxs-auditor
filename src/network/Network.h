@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <ctime>
+#include <utility>
 
 
 // A counter Template to count the number of modules loaded or alive
@@ -74,7 +75,6 @@ private:
 };
 
 
-
 class NetworkModule : public NetCounter<NetworkModule> {
     
 public:
@@ -110,9 +110,28 @@ public:
     virtual bool publishSupport(){return false;};
     virtual std::vector<std::string> getSubscriptions(){return std::vector<std::string>();};
     
-    virtual bool createBroadcastAddress(){return false;};
+    // Broadcasting Functions
     
-    // Add functions to be able to import/export addressbook
+    virtual bool createBroadcastAddress(){return false;};
+    virtual bool broadcastOnAddress(std::string address){return false;};
+    virtual bool subscribeToAddress(std::string address){return false;};
+    
+    // Functions for importing/exporting from BitMessage server addressbook
+    
+    virtual std::string getLabel(std::string address){return "";};
+    virtual bool setLabel(std::string label, std::string address){return false;};
+    
+    virtual std::string getAddressFromLabel(std::string label){return "";};
+    
+    virtual bool addContact(std::string label, std::string address){return false;};
+    
+    // Return a vector of pairs, containing the Label and Addressess respectively
+    virtual std::vector<std::pair<std::string, std::string> > getAllContacts(){return std::vector<std::pair<std::string, std::string> >();};
+
+    // Queue Interaction Functions
+    virtual bool flushQueue(){return false;}; // Forces a flush of the message queue.
+    virtual int queueSize(){return 0;};
+    
     
     
 private:
