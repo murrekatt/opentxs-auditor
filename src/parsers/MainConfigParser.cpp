@@ -113,8 +113,11 @@ void MainConfigParser::setNetworkModule(std::string const module){
     
     std::cout << "Network Module: " << netmodule << std::endl;
     
+    char port_string[10];
+    sprintf(port_string, "%d", remote_bitmessageport);
+    
     if(netmodule == "bitmessage"){
-        std::string commstring(remote_bitmessagehost + "," + std::to_string(remote_bitmessageport) + "," + remote_bitmessageuser + "," + remote_bitmessagepass);
+        std::string commstring(remote_bitmessagehost + "," + port_string + "," + remote_bitmessageuser + "," + remote_bitmessagepass);
         m_netmodule = std::shared_ptr<BitMessage>(new BitMessage(commstring));
         
     }
