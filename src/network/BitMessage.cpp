@@ -25,13 +25,25 @@ BitMessage::BitMessage(std::string commstring) : NetworkModule(commstring) {
         parsedList.push_back(*it);
     }
     
-    // Needs to be parsed properly, this will undoubtedly lead to errors when initializing BitMessage comms
-    // As it is prone to letting typo errors cause crashes.
+    if(parsedList.size() > 0)
+        m_host = parsedList.at(0);
+    else
+        m_host = "localhost";
     
-    m_host = parsedList.at(0);
-    m_port = std::atoi(parsedList.at(1).c_str());
-    m_username = parsedList.at(2);
-    m_pass = parsedList.at(3);
+    if(parsedList.size() > 1)
+        m_port = std::atoi(parsedList.at(1).c_str());
+    else
+        m_port = 8442;
+    
+    if(parsedList.size() > 2)
+        m_username = parsedList.at(2);
+    else
+        m_username = "defaultuser";
+    
+    if(parsedList.size() > 3)
+        m_pass = parsedList.at(3);
+    else
+        m_pass = "defaultpass";
     
     m_xmllib = new XmlRPC(m_host, m_port, true, 10000);
     m_xmllib->setAuth(m_username, m_pass);
@@ -102,22 +114,22 @@ bool BitMessage::addressAccessible(std::string address){
 //bool BitMessage::publishSupport(){return true;};
 
 
-std::vector<std::string> BitMessage::getAddresses(){return std::vector<std::string>();};
+std::vector<std::string> BitMessage::getAddresses(){return std::vector<std::string>();}
 
 
-std::vector<NetworkMail> BitMessage::getInbox(std::string address){return std::vector<NetworkMail>();};
-std::vector<NetworkMail> BitMessage::getAllInboxes(){return std::vector<NetworkMail>();};
-std::vector<NetworkMail> BitMessage::getAllUnread(){return std::vector<NetworkMail>();};
+std::vector<NetworkMail> BitMessage::getInbox(std::string address){return std::vector<NetworkMail>();}
+std::vector<NetworkMail> BitMessage::getAllInboxes(){return std::vector<NetworkMail>();}
+std::vector<NetworkMail> BitMessage::getAllUnread(){return std::vector<NetworkMail>();}
 
-bool BitMessage::checkNewMail(std::string address){return false;}; // checks for new mail, returns true if there is new mail in the queue.
-std::vector<NetworkMail> BitMessage::getUnreadMail(std::string address){return std::vector<NetworkMail>();}; // You don't want to have to do copies of your whole inbox for every download
-bool BitMessage::deleteMessage(NetworkMail message){return false;}; // Any part of the message should be able to be used to delete it from an inbox
-bool BitMessage::markRead(NetworkMail message, bool read){return false;}; // By default this marks a given message as read or not, not all API's will support this and should thus return false.
+bool BitMessage::checkNewMail(std::string address){return false;} // checks for new mail, returns true if there is new mail in the queue.
+std::vector<NetworkMail> BitMessage::getUnreadMail(std::string address){return std::vector<NetworkMail>();} // You don't want to have to do copies of your whole inbox for every download
+bool BitMessage::deleteMessage(NetworkMail message){return false;} // Any part of the message should be able to be used to delete it from an inbox
+bool BitMessage::markRead(NetworkMail message, bool read){return false;} // By default this marks a given message as read or not, not all API's will support this and should thus return false.
 
-bool BitMessage::sendMail(NetworkMail message){return false;};
+bool BitMessage::sendMail(NetworkMail message){return false;}
 
 
-std::vector<std::string> BitMessage::getSubscriptions(){return std::vector<std::string>();};
+std::vector<std::string> BitMessage::getSubscriptions(){return std::vector<std::string>();}
 
 
 /*
