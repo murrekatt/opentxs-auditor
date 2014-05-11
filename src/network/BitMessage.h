@@ -41,8 +41,6 @@ private:
 typedef std::vector<BitMessageIdentity> BitMessageIdentities;
 
 
-
-
 class BitMessageAddressBookEntry {
     
 public:
@@ -115,7 +113,6 @@ private:
 typedef std::vector<BitInboxMessage> BitMessageInbox;
 
 
-
 class BitSentMessage {
     
 public:
@@ -172,6 +169,7 @@ private:
 };
 
 
+class BitMessageQueue; // Pre-defined here so we can hold one as an object in our BitMessage class.
 
 class BitMessage : public NetworkModule {
 
@@ -333,10 +331,53 @@ private:
     // Private Helper Functions
     
     void setServerAlive(bool alive);
+    void parseCommstring(std::string commstring);
     
     
     // Message Queing Plugs
     
+    BitMessageQueue *bm_queue;
+    
+};
+
+
+
+class BitMessageQueue {
+    
+public:
+    
+    BitMessageQueue(BitMessage *parent) : parentInterface(parent), m_stop(), m_thread() { }
+    virtual ~BitMessageQueue() { try { stop(); } catch(...) { /* Will need to refactor this */ } }
+    
+    // Public Thread Managers
+    
+    void start() { m_thread = std::thread(&BitMessageQueue::run, this); }
+    void stop() { m_stop = true; m_thread.join(); }
+    
+    void addToQueue(std::string command){ MasterQueue.push(command); }
+    //bool popFrontOfQueue(std::string command){ MasterQueue.;
+    
+    int queueSize();
+    
+    // Add function to determine amount of time last command has run.
+    
+    
+protected:
+    
+    std::atomic<bool> m_stop;
+    void run(){ while(!m_stop){std::cout << "Running in Thread" << std::endl;} };
+    
+private:
+    
+    // Variables
+    
+    std::thread m_thread;
+    
+    BitMessage *parentInterface;
+    MsgQueue<std::string> MasterQueue;
     
     
 };
+
+
+

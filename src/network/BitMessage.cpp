@@ -12,38 +12,14 @@
 #include <utility>
 #include <algorithm>
 #include <thread>
+#include <chrono>
 
 #include<boost/tokenizer.hpp>
 
 
 BitMessage::BitMessage(std::string commstring) : NetworkModule(commstring) {
 
-    std::vector<std::string> parsedList;
-    boost::tokenizer<boost::escaped_list_separator<char> > tokens(commstring);
-    
-    for(boost::tokenizer<boost::escaped_list_separator<char> >::iterator it=tokens.begin(); it!=tokens.end();++it){
-        parsedList.push_back(*it);
-    }
-    
-    if(parsedList.size() > 0)
-        m_host = parsedList.at(0);
-    else
-        m_host = "localhost";
-    
-    if(parsedList.size() > 1)
-        m_port = std::atoi(parsedList.at(1).c_str());
-    else
-        m_port = 8442;
-    
-    if(parsedList.size() > 2)
-        m_username = parsedList.at(2);
-    else
-        m_username = "defaultuser";
-    
-    if(parsedList.size() > 3)
-        m_pass = parsedList.at(3);
-    else
-        m_pass = "defaultpass";
+    parseCommstring(commstring);
     
     m_xmllib = new XmlRPC(m_host, m_port, true, 10000);
     m_xmllib->setAuth(m_username, m_pass);
@@ -51,6 +27,13 @@ BitMessage::BitMessage(std::string commstring) : NetworkModule(commstring) {
     
     // Runs to setup our counter
     accessible();
+    
+    // Thread Handler
+    bm_queue = new BitMessageQueue(this);
+    bm_queue->start();   // Start Listener Thread
+    std::this_thread::sleep_for(std::chrono::seconds(2));  // Testing this functionality - Pause while listener posts to cout.
+    bm_queue->stop();    // Stop Listener Thread
+
 }
 
 
@@ -1155,6 +1138,38 @@ void BitMessage::setServerAlive(bool alive){
         NetCounter::dead();
         m_serverAvailable = false;
     }
+    
+}
+
+
+void BitMessage::parseCommstring(std::string commstring){
+    
+    std::vector<std::string> parsedList;
+    boost::tokenizer<boost::escaped_list_separator<char> > tokens(commstring);
+    
+    for(boost::tokenizer<boost::escaped_list_separator<char> >::iterator it=tokens.begin(); it!=tokens.end();++it){
+        parsedList.push_back(*it);
+    }
+    
+    if(parsedList.size() > 0)
+        m_host = parsedList.at(0);
+    else
+        m_host = "localhost";
+    
+    if(parsedList.size() > 1)
+        m_port = std::atoi(parsedList.at(1).c_str());
+    else
+        m_port = 8442;
+    
+    if(parsedList.size() > 2)
+        m_username = parsedList.at(2);
+    else
+        m_username = "defaultuser";
+    
+    if(parsedList.size() > 3)
+        m_pass = parsedList.at(3);
+    else
+        m_pass = "defaultpass";
     
 }
 
