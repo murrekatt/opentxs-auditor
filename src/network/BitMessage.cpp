@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <thread>
 #include <chrono>
+#include <functional>
 
 #include<boost/tokenizer.hpp>
 
@@ -24,9 +25,8 @@ BitMessage::BitMessage(std::string commstring) : NetworkModule(commstring) {
     m_xmllib = new XmlRPC(m_host, m_port, true, 10000);
     m_xmllib->setAuth(m_username, m_pass);
     
-    
     // Runs to setup our counter
-    accessible();
+    checkAlive();
     
     // Thread Handler
     bm_queue = new BitMessageQueue(this);
@@ -46,6 +46,12 @@ BitMessage::~BitMessage(){
     std::cout << "Cleaning Up BitMessage Class" << std::endl; // Temporary
 
     // Clean up Objects
+    
+    if(!m_forceKill)  // If we haven't asked for a force kill
+        while(bm_queue->processing()){
+            ; // If we're in the middle of processing, don't kill the message queue
+        }
+    
     delete m_xmllib;
     delete bm_queue;  // Queue will be stopped automatically upon deletion
     
@@ -81,9 +87,7 @@ bool BitMessage::stopQueue(){
         return false;
 }
 
-
 int BitMessage::queueSize(){
-    
     if(bm_queue != nullptr){
         return bm_queue->queueSize();
     }
@@ -103,14 +107,8 @@ int BitMessage::queueSize(){
 
 bool BitMessage::accessible(){
     
-    if(helloWorld("Hello","World") != "Hello-World"){
-        setServerAlive(false);
-        return false;
-    }
-    else{
-        setServerAlive(true);
-        return true;
-    }
+    return m_serverAvailable;
+
 }
 
 
@@ -135,10 +133,11 @@ std::string BitMessage::createDeterministicAddress(std::string key){
 
 bool BitMessage::addressAccessible(std::string address){
     
-    BitMessageIdentities identities(listAddresses());
+    std::function<void()> command = std::bind(&BitMessage::listAddresses, this);
+    bm_queue->addToQueue(command);
     
-    for(int x = 0; x < identities.size(); x++){
-            if(identities.at(x).getAddress() == address){
+    for(int x = 0; x < m_localIdentities.size(); x++){
+            if(m_localIdentities.at(x).getAddress() == address){
             return true;
         }
     }
@@ -149,7 +148,11 @@ bool BitMessage::addressAccessible(std::string address){
 //bool BitMessage::publishSupport(){return true;};
 
 
-std::vector<std::string> BitMessage::getAddresses(){return std::vector<std::string>();}
+std::vector<std::string> BitMessage::getAddresses(){
+    
+    return std::vector<std::string>();
+
+}
 
 
 std::vector<NetworkMail> BitMessage::getInbox(std::string address){return std::vector<NetworkMail>();}
@@ -768,7 +771,7 @@ bool BitMessage::leaveChan(std::string address){
 // Address Management
 
 
-BitMessageIdentities BitMessage::listAddresses(){
+void BitMessage::listAddresses(){
     
     std::vector<xmlrpc_c::value> params;
     BitMessageIdentities responses;
@@ -777,14 +780,14 @@ BitMessageIdentities BitMessage::listAddresses(){
     
     if(result.first == false){
         std::cout << "Error: listAddresses2 failed" << std::endl;
-        return responses;
+        //return responses;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
             std::cout << std::string(ValueString(result.second)) << std::endl;
-            return responses;
+            //return responses;
         }
     }
     
@@ -795,7 +798,7 @@ BitMessageIdentities BitMessage::listAddresses(){
     if ( !parsesuccess )
     {
         std::cout  << "Failed to parse configuration\n" << reader.getFormattedErrorMessages();
-        return responses;
+        //return responses;
     }
     
     const Json::Value addresses = root["addresses"];
@@ -806,7 +809,10 @@ BitMessageIdentities BitMessage::listAddresses(){
         
     }
     
-    return responses;
+    std::unique_lock<std::mutex> mlock(m_localIdentitiesMutex);
+    m_localIdentities = responses;
+    mlock.unlock();
+    //return responses;
     
 }
 
@@ -1189,6 +1195,17 @@ void BitMessage::setServerAlive(bool alive){
     else{
         NetCounter::dead();
         m_serverAvailable = false;
+    }
+    
+}
+
+void BitMessage::checkAlive(){
+    
+    if(helloWorld("Hello","World") != "Hello-World"){
+        setServerAlive(false);
+    }
+    else{
+        setServerAlive(true);
     }
     
 }

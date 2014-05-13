@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <ctime>
+#include <mutex>
 #include "Network.h"
 #include "XmlRPC.h"
 #include "base64.h"
@@ -178,7 +179,7 @@ public:
     BitMessage(std::string commstring);
     ~BitMessage();
     
-    
+    void forceKill(bool kill){m_forceKill = kill;};
     // Virtual Function Implementations
     bool accessible();
     
@@ -263,7 +264,7 @@ public:
     
     // Address Management
     
-    BitMessageIdentities listAddresses(); // This is technically "listAddresses2" in the API reference
+    void listAddresses(); // This is technically "listAddresses2" in the API reference
     
     BitMessageAddress createRandomAddress(base64 label=base64(""), bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
     BitMessageAddress createRandomAddress(std::string label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){return createRandomAddress(label, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);}
@@ -338,10 +339,19 @@ private:
     void setServerAlive(bool alive);
     void parseCommstring(std::string commstring);
     
+    void checkAlive();
+    
     
     // Message Queing Plugs
     
+    friend BitMessageQueue;
+    
     BitMessageQueue *bm_queue;
+    
+    // Message Queue Variables
+    std::mutex m_localIdentitiesMutex;
+    BitMessageIdentities m_localIdentities;
+    bool m_forceKill;
     
 };
 

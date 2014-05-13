@@ -4,6 +4,9 @@
 //  
 #include "BitMessage.h"
 
+#include <mutex>
+#include <condition_variable>
+
 class BitMessage;
 
 
@@ -18,10 +21,12 @@ public:
     bool start();
     bool stop();
     
+    bool processing();
     // Queue Managers
-    void addToQueue(std::string command);
+    void addToQueue(std::function<void()> command);
     
     int queueSize();
+    void clearQueue();
     
     // Add function to determine amount of time last command has run.
     // Use boost::chrono?
@@ -36,11 +41,15 @@ private:
     // Variables
     
     std::thread m_thread;
+    std::mutex m_processing;
+    std::condition_variable m_conditional;
+    
+    std::atomic<bool> m_working;
     
     BitMessage *parentInterface;
-    MsgQueue<std::string> MasterQueue;
     
-    
+    MsgQueue<std::function<void()>> MasterQueue;
+     
     // Functions
     
     bool parseNextMessage();

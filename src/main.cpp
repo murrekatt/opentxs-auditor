@@ -51,15 +51,18 @@ int main(int argc, char * argv[])
     
     
     std::cout << std::endl;
-    std::cout << "BitMessage listAddressBookEntries Test" << std::endl;
+    //std::cout << "BitMessage listAddressBookEntries Test" << std::endl;
     //std::cout << dynamic_cast<BitMessage*>(netModule)->listSubscriptions().at(0).getLabel().decoded() << std::endl;
-    std::cout << dynamic_cast<BitMessage*>(netModule)->listAddressBookEntries().at(0).getLabel().decoded() << std::endl;
+    //std::cout << dynamic_cast<BitMessage*>(netModule)->listAddressBookEntries().at(0).getLabel().decoded() << std::endl;
     //std::cout << dynamic_cast<BitMessage*>(netModule)->sendMessage("BM-", "BM-", base64("Testing"), base64("Knock if you receive this message?")) << std::endl;
     //std::cout << dynamic_cast<BitMessage*>(netModule)->getSentMessageByID().getMessage().decoded() << std::endl;
     //std::cout << "Message on last received message is: " << std::endl;
     //std::cout << dynamic_cast<BitMessage*>(netModule)->getInboxMessageByID((dynamic_cast<BitMessage*>(netModule)->getAllInboxMessages().at(0).getMsgID())).getMessage().decoded() << std::endl;
-
-
+    
+    
+    while(dynamic_cast<BitMessage*>(netModule)->queueSize() != 0){
+        ;
+    }
 
     
     std::cout << std::endl;
