@@ -19,7 +19,7 @@
 
 BitMessage::BitMessage(std::string commstring) : NetworkModule(commstring) {
 
-    parseCommstring(commstring);
+    parseCommstring(commstring);  // This is its own function now, purely for parsing and setting up the config as necessary.
     
     m_xmllib = new XmlRPC(m_host, m_port, true, 10000);
     m_xmllib->setAuth(m_username, m_pass);
@@ -30,15 +30,67 @@ BitMessage::BitMessage(std::string commstring) : NetworkModule(commstring) {
     
     // Thread Handler
     bm_queue = new BitMessageQueue(this);
-    bm_queue->start();   // Start Listener Thread
-    std::this_thread::sleep_for(std::chrono::seconds(2));  // Testing this functionality - Pause while listener posts to cout.
-    bm_queue->stop();    // Stop Listener Thread
-
+    
+    /* TESTING */
+    
+    startQueue();   // Start Listener Thread
+    //std::this_thread::sleep_for(std::chrono::seconds(1));  // Testing this functionality - Pause while listener posts to cout.
+    //stopQueue();    // Stop Listener Thread
+    
+    /* End Testing */
 }
 
 
 BitMessage::~BitMessage(){
+
+    std::cout << "Cleaning Up BitMessage Class" << std::endl; // Temporary
+
+    // Clean up Objects
     delete m_xmllib;
+    delete bm_queue;  // Queue will be stopped automatically upon deletion
+    
+    std::cout << "Done Cleaning up BitMessage Class" << std::endl; // Temporary
+}
+
+
+/* 
+ * Message Queue Interaction
+ */
+
+bool BitMessage::startQueue(){
+    
+    if(bm_queue != nullptr){
+        if(bm_queue->start())   // Should also have checks to determine if queue was already started.
+            return true;
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+bool BitMessage::stopQueue(){
+    
+    if(bm_queue != nullptr){
+        if(bm_queue->stop())   // Should also have checks to determine if queue was already stopped.
+            return true;
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+
+int BitMessage::queueSize(){
+    
+    if(bm_queue != nullptr){
+        return bm_queue->queueSize();
+    }
+    else{
+        std::cout << "Message Queue does not exist!" << std::endl;
+        return 0;
+    }
 }
 
 

@@ -11,7 +11,7 @@
 #include "base64.h"
 #include "WorkQueue.h"
 #include "MsgQueue.h"
-
+#include "BitMessageQueue.h"
 
 typedef std::string BitMessageAddress;
 
@@ -300,6 +300,11 @@ public:
 
     void setTimeout(int timeout);
     
+    // Message Queue Interaction
+    bool startQueue();
+    bool stopQueue();
+    int queueSize();
+    
     
 private:
     
@@ -342,42 +347,7 @@ private:
 
 
 
-class BitMessageQueue {
-    
-public:
-    
-    BitMessageQueue(BitMessage *parent) : parentInterface(parent), m_stop(), m_thread() { }
-    virtual ~BitMessageQueue() { try { stop(); } catch(...) { /* Will need to refactor this */ } }
-    
-    // Public Thread Managers
-    
-    void start() { m_thread = std::thread(&BitMessageQueue::run, this); }
-    void stop() { m_stop = true; m_thread.join(); }
-    
-    void addToQueue(std::string command){ MasterQueue.push(command); }
-    //bool popFrontOfQueue(std::string command){ MasterQueue.;
-    
-    int queueSize();
-    
-    // Add function to determine amount of time last command has run.
-    
-    
-protected:
-    
-    std::atomic<bool> m_stop;
-    void run(){ while(!m_stop){std::cout << "Running in Thread" << std::endl;} };
-    
-private:
-    
-    // Variables
-    
-    std::thread m_thread;
-    
-    BitMessage *parentInterface;
-    MsgQueue<std::string> MasterQueue;
-    
-    
-};
+
 
 
 

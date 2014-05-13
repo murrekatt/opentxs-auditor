@@ -73,8 +73,7 @@ int main(int argc, char * argv[])
     world >> message;
     std::cout << message.encoded() << std::endl;
     decoded << message;
-    std::cout << decoded << std::endl;
-
+    std::cout << decoded << std::endl << std::endl;
     
     
 }

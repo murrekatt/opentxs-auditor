@@ -24,6 +24,7 @@ env.Append(CXXFLAGS = ['-std=c++11'])
 sources = Split("""
 src/parsers/MainConfigParser.cpp
 src/parsers/jsoncpp/jsoncpp.cpp
+src/queue/BitMessageQueue.cpp
 src/network/Network.cpp
 src/network/BitMessage.cpp
 src/network/XmlRPC.cpp

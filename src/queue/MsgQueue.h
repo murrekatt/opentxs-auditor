@@ -24,7 +24,7 @@ public:
         queue_.pop();
         return item;
     }
-    
+
     void pop(T& item)
     {
         std::unique_lock<std::mutex> mlock(mutex_);
@@ -50,6 +50,14 @@ public:
         queue_.push(std::move(item));
         mlock.unlock();
         cond_.notify_one();
+    }
+    
+    int size()
+    {
+        std::unique_lock<std::mutex> mlock(mutex_);
+        int size = queue_.size();
+        mlock.unlock();
+        return size;
     }
     
 private:
