@@ -187,22 +187,23 @@ public:
     std::string moduleType(){return "BitMessage";}
     
     bool createAddress(std::string options);  // Queued
-    bool createDeterministicAddress(std::string key); // Not Queued
+    bool createDeterministicAddress(std::string key); // Queued
     
     // Not yet implemented
      
     bool addressAccessible(std::string address);  // Queued
     std::vector<std::string> getAddresses();    // Queued
-    bool checkAddresses();
+    bool checkAddresses(); // Queued
+    
+    bool checkMail(); // Asks the network interface to manually check for messages // Not Queued
+    bool newMailExists(std::string address=""); // checks for new mail, returns true if there is new mail in the queue. // Not Queued
+    std::vector<NetworkMail> getUnreadMail(std::string address); // You don't want to have to do copies of your whole inbox for every download  // Not Queued
+    bool deleteMessage(NetworkMail message); // Any part of the message should be able to be used to delete it from an inbox    // Not Queued
+    bool markRead(NetworkMail message, bool read=true); // By default this marks a given message as read or not, not all API's will support this and should thus return false.  // Not Queued
     
     std::vector<NetworkMail> getInbox(std::string address); // Not Queued
     std::vector<NetworkMail> getAllInboxes();   // Not Queued
     std::vector<NetworkMail> getAllUnread();    // Not Queued
-    
-    bool checkNewMail(std::string address); // checks for new mail, returns true if there is new mail in the queue. // Not Queued
-    std::vector<NetworkMail> getUnreadMail(std::string address); // You don't want to have to do copies of your whole inbox for every download  // Not Queued
-    bool deleteMessage(NetworkMail message); // Any part of the message should be able to be used to delete it from an inbox    // Not Queued
-    bool markRead(NetworkMail message, bool read=true); // By default this marks a given message as read or not, not all API's will support this and should thus return false.  // Not Queued
     
     bool sendMail(NetworkMail message); // Not Queued
     
@@ -225,7 +226,7 @@ public:
 
     // Inbox Management
     
-    BitMessageInbox getAllInboxMessages();
+    void getAllInboxMessages();
     
     BitInboxMessage getInboxMessageByID(std::string msgID, bool setRead=true);
     
@@ -365,6 +366,10 @@ private:
     
     std::mutex m_localAddressBookMutex;
     BitMessageAddressBook m_localAddressBook;   // Remote user addresses.
+    
+    std::mutex m_localInboxMutex;
+    std::vector<NetworkMail> m_localInbox;
+    std::atomic<bool> m_newMailExists;
     
 };
 

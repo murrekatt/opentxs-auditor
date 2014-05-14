@@ -5,6 +5,7 @@
 #include "BitMessage.h"
 #include "json/json.h"
 #include "base64.h"
+#include "VectorHelpers.h"
 
 #include <string>
 #include <iostream>
@@ -95,7 +96,7 @@ bool BitMessage::createAddress(std::string options=""){
 bool BitMessage::createDeterministicAddress(std::string key){
     
     try{
-        std::function<void()> firstCommand = std::bind(&BitMessage::createRandomAddress, this, base64(""), false, 1, 1);
+        std::function<void()> firstCommand = std::bind(&BitMessage::createRandomAddress, this, base64(key), false, 1, 1);
         bm_queue->addToQueue(firstCommand);
     
         std::function<void()> secondCommand = std::bind(&BitMessage::listAddresses, this);
@@ -107,8 +108,7 @@ bool BitMessage::createDeterministicAddress(std::string key){
         return false;
     }
     
-}
-
+}  // Queued
 
 bool BitMessage::addressAccessible(std::string address){
     
@@ -130,8 +130,6 @@ bool BitMessage::addressAccessible(std::string address){
     return false;
 } // Queued
 
-
-
 std::vector<std::string> BitMessage::getAddresses(){
     
     std::unique_lock<std::mutex> mlock(m_localAddressBookMutex);
@@ -152,22 +150,33 @@ bool BitMessage::checkAddresses(){
         std::function<void()> command = std::bind(&BitMessage::listAddresses, this);
         bm_queue->addToQueue(command);
         return true;
-        
     }
     catch(...){
         return false;
     }
-}
+} // Queued
+
+bool BitMessage::checkMail(){
+    try{
+        //std::function<void()> command = std::bind(&BitMessage::listAddresses, this);
+        //bm_queue->addToQueue(command);
+        return true;
+    }
+    catch(...){
+        return false;
+
+    }
+} // checks for new mail, returns true if there is new mail in the queue.
+
+bool BitMessage::newMailExists(std::string address){return false;}
+std::vector<NetworkMail> BitMessage::getUnreadMail(std::string address){return std::vector<NetworkMail>();} // You don't want to have to do copies of your whole inbox for every download
+bool BitMessage::deleteMessage(NetworkMail message){return false;} // Any part of the message should be able to be used to delete it from an inbox
+bool BitMessage::markRead(NetworkMail message, bool read){return false;} // By default this marks a given message as read or not, not all API's will support this and should thus return false.
 
 
 std::vector<NetworkMail> BitMessage::getInbox(std::string address){return std::vector<NetworkMail>();}
 std::vector<NetworkMail> BitMessage::getAllInboxes(){return std::vector<NetworkMail>();}
 std::vector<NetworkMail> BitMessage::getAllUnread(){return std::vector<NetworkMail>();}
-
-bool BitMessage::checkNewMail(std::string address){return false;} // checks for new mail, returns true if there is new mail in the queue.
-std::vector<NetworkMail> BitMessage::getUnreadMail(std::string address){return std::vector<NetworkMail>();} // You don't want to have to do copies of your whole inbox for every download
-bool BitMessage::deleteMessage(NetworkMail message){return false;} // Any part of the message should be able to be used to delete it from an inbox
-bool BitMessage::markRead(NetworkMail message, bool read){return false;} // By default this marks a given message as read or not, not all API's will support this and should thus return false.
 
 bool BitMessage::sendMail(NetworkMail message){return false;}
 
@@ -241,15 +250,14 @@ int BitMessage::queueSize(){
 
 
 
-
 /*
- * Direct API Functions
+ * Direct "Low-Level" API Functions
  */
 
 // Inbox Management
 
 
-std::vector<BitInboxMessage> BitMessage::getAllInboxMessages(){
+void BitMessage::getAllInboxMessages(){
 
     Parameters params;
     std::vector<BitInboxMessage> inbox;
@@ -258,14 +266,12 @@ std::vector<BitInboxMessage> BitMessage::getAllInboxMessages(){
     
     if(result.first == false){
         std::cerr << "Error: getAllInboxMessages failed" << std::endl;
-        return inbox;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
             std::cerr << std::string(ValueString(result.second)) << std::endl;
-            return inbox;
         }
     }
     
@@ -276,7 +282,6 @@ std::vector<BitInboxMessage> BitMessage::getAllInboxMessages(){
     if ( !parsesuccess )
     {
         std::cerr  << "Failed to parse inbox\n" << reader.getFormattedErrorMessages();
-        return inbox;
     }
     
     const Json::Value inboxMessages = root["inboxMessages"];
@@ -292,9 +297,17 @@ std::vector<BitInboxMessage> BitMessage::getAllInboxMessages(){
         inbox.push_back(message);
         
     }
-    
-    return inbox;
 
+    std::unique_lock<std::mutex> mlock(m_localInboxMutex); // Lock so that we dont have a race condition.
+    // Populate our local inbox.
+
+    for(int x=0; x<inbox.size(); x++){
+        NetworkMail l_mail(inbox.at(x).getFromAddress(), inbox.at(x).getToAddress(), inbox.at(x).getSubject().decoded(), inbox.at(x).getMessage().decoded(), inbox.at(x).getReceivedTime());
+        m_localInbox.push_back(l_mail);
+    }
+    std::reverse(m_localInbox.begin(), m_localInbox.end());  // New messages at the front
+    mlock.unlock(); // Release our lock so that others can access the inbox
+    
 };
 
 
@@ -839,14 +852,12 @@ void BitMessage::listAddresses(){
     
     if(result.first == false){
         std::cerr << "Error: listAddresses2 failed" << std::endl;
-        //return responses;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
             std::cerr << std::string(ValueString(result.second)) << std::endl;
-            //return responses;
         }
     }
     
@@ -857,7 +868,6 @@ void BitMessage::listAddresses(){
     if ( !parsesuccess )
     {
         std::cerr << "Failed to parse configuration\n" << reader.getFormattedErrorMessages();
-        //return responses;
     }
     
     const Json::Value addresses = root["addresses"];
@@ -871,7 +881,6 @@ void BitMessage::listAddresses(){
     std::unique_lock<std::mutex> mlock(m_localIdentitiesMutex);
     m_localIdentities = responses;
     mlock.unlock();
-    //return responses;
     
 }
 
@@ -1305,6 +1314,6 @@ void BitMessage::initializeUserData(){
     
     listAddresses(); // Populates Local Owned Addresses
     listAddressBookEntries();  // Populates address book data, for remote users we have addresses for.
-    
+    getAllInboxMessages();
     
 }

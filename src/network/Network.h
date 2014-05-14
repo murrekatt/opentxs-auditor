@@ -89,14 +89,14 @@ public:
     
     virtual std::string moduleType(){return "";}
     
-    virtual bool createAddress(std::string options=""){return false;}
+    virtual bool createAddress(std::string options){return false;}
     virtual bool createDeterministicAddress(std::string key){return false;}
     
     virtual bool addressAccessible(std::string address){return false;}
     virtual std::vector<std::string> getAddresses(){return std::vector<std::string>();}
     virtual bool checkAddresses(){return false;} // Asks the network interface to manually check for new owned addresses.
     
-    virtual bool checkNewMail(){return false;} // Asks the network interface to manually check for new messages
+    virtual bool checkMail(){return false;} // Asks the network interface to manually check for messages
     virtual bool newMailExists(std::string address){return false;} // checks for new mail, returns true if there is new mail in the queue.
     
     virtual std::vector<NetworkMail> getInbox(std::string address){return std::vector<NetworkMail>();}
