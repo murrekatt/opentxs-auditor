@@ -89,7 +89,7 @@ public:
     
     virtual std::string moduleType(){return "";}
     
-    virtual std::string createAddress(std::string options=""){return "";}
+    virtual void createAddress(std::string options=""){;}
     virtual std::string createDeterministicAddress(std::string key){return "";}
     
     virtual bool addressAccessible(std::string address){return false;}

@@ -186,12 +186,12 @@ public:
     
     std::string moduleType(){return "BitMessage";}
     
-    std::string createAddress(std::string options);  // Not Queued
+    void createAddress(std::string options);  // Queued
     std::string createDeterministicAddress(std::string key); // Not Queued
     
     // Not yet implemented
      
-    bool addressAccessible(std::string address);  // Not Queued
+    bool addressAccessible(std::string address);  // Queued
     std::vector<std::string> getAddresses();    // Not Queued
     
     std::vector<NetworkMail> getInbox(std::string address); // Not Queued
@@ -266,8 +266,8 @@ public:
     
     void listAddresses(); // This is technically "listAddresses2" in the API reference
     
-    BitMessageAddress createRandomAddress(base64 label=base64(""), bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
-    BitMessageAddress createRandomAddress(std::string label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){return createRandomAddress(label, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);}
+    void createRandomAddress(base64 label=base64(""), bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
+    //void createRandomAddress(std::string label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){createRandomAddress(label, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);}
 
     // Warning - This is not guaranteed to return a filled vector if the call does not return any new addresses.
     // You must check that you are accessing a legal position in the vector first.
@@ -351,7 +351,10 @@ private:
     
     void initializeUserData(); // Manually pulls down startup data for BitMessage Class.
     
-    // Message Queue Variables
+    // Local Objects and their corresponding Mutexes for thread safety.
+    
+    std::mutex m_newestCreatedAddressMutex;
+    std::string newestCreatedAddress;
     
     std::mutex m_localIdentitiesMutex;
     BitMessageIdentities m_localIdentities;   // The addresses we have the ability to decrypt messages for.

@@ -45,7 +45,7 @@ BitMessage::BitMessage(std::string commstring) : NetworkModule(commstring) {
 
 BitMessage::~BitMessage(){
 
-    std::cout << "Cleaning Up BitMessage Class" << std::endl; // Temporary
+    std::cerr << "Cleaning Up BitMessage Class" << std::endl; // Temporary
 
     // Clean up Objects
     
@@ -57,7 +57,7 @@ BitMessage::~BitMessage(){
     delete bm_queue;  // Queue will be stopped automatically upon deletion
     delete m_xmllib;
     
-    std::cout << "Done Cleaning up BitMessage Class" << std::endl; // Temporary
+    std::cerr << "Done Cleaning up BitMessage Class" << std::endl; // Temporary
 }
 
 
@@ -71,7 +71,7 @@ bool BitMessage::startQueue(){
         if(bm_queue->start())   // Should also have checks to determine if queue was already started.
             return true;
         else{
-            std::cout << "If you are seeing this, something went terribly wrong: bm_queue is a nullptr" << std::endl;
+            std::cerr << "If you are seeing this, something went terribly wrong: bm_queue is a nullptr" << std::endl;
             return false;
         }
     }
@@ -96,7 +96,7 @@ int BitMessage::queueSize(){
         return bm_queue->queueSize();
     }
     else{
-        std::cout << "Message Queue does not exist!" << std::endl;
+        std::cerr << "Message Queue does not exist!" << std::endl;
         return 0;
     }
 }
@@ -116,14 +116,15 @@ bool BitMessage::accessible(){
 }
 
 
-std::string BitMessage::createAddress(std::string options=""){
+void BitMessage::createAddress(std::string options=""){
     
-    if(options == ""){
-        return createRandomAddress();
-    }
-    else
-        return "";  // To Be Implemented
+    // Here we will push a request to create a new random address onto the queue
+    // And then immediately request the updated list of addresses
+    std::function<void()> firstCommand = std::bind(&BitMessage::createRandomAddress, this, base64(""), false, 1, 1);
+    bm_queue->addToQueue(firstCommand);
     
+    std::function<void()> secondCommand = std::bind(&BitMessage::listAddresses, this);
+    bm_queue->addToQueue(secondCommand);
 }
 
 
@@ -137,14 +138,18 @@ std::string BitMessage::createDeterministicAddress(std::string key){
 
 bool BitMessage::addressAccessible(std::string address){
     
+    std::unique_lock<std::mutex> mlock(m_localIdentitiesMutex);
+
     for(int x = 0; x < m_localIdentities.size(); x++){
             if(m_localIdentities.at(x).getAddress() == address){
+                mlock.unlock();
             return true;
         }
     }
+    mlock.unlock();
     
-    std::function<void()> command = std::bind(&BitMessage::listAddresses, this);
-    bm_queue->addToQueue(command);
+    std::function<void()> command = std::bind(&BitMessage::listAddresses, this); // If the address isn't acccessible, try and fetch the latest
+    bm_queue->addToQueue(command);                                               // Address book from the API server for another try later.
     
     return false;
 }
@@ -155,12 +160,18 @@ bool BitMessage::addressAccessible(std::string address){
 
 std::vector<std::string> BitMessage::getAddresses(){
     
+    std::function<void()> command = std::bind(&BitMessage::listAddresses, this); // push a list address request to the queue.
+    bm_queue->addToQueue(command);
+    
     std::vector<std::string> addresses;
+    std::unique_lock<std::mutex> mlock(m_localAddressBookMutex);
+
     for(int x = 0; x < m_localAddressBook.size(); x++){
         addresses.push_back(m_localAddressBook.at(x).getAddress());
     }
     
-    return std::vector<std::string>();
+    mlock.unlock();
+    return addresses;
 
 }
 
@@ -208,14 +219,14 @@ std::vector<BitInboxMessage> BitMessage::getAllInboxMessages(){
     XmlResponse result = m_xmllib->run("getAllInboxMessages", params);
     
     if(result.first == false){
-        std::cout << "Error: getAllInboxMessages failed" << std::endl;
+        std::cerr << "Error: getAllInboxMessages failed" << std::endl;
         return inbox;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return inbox;
         }
     }
@@ -226,7 +237,7 @@ std::vector<BitInboxMessage> BitMessage::getAllInboxMessages(){
     bool parsesuccess = reader.parse( ValueString(result.second), root );
     if ( !parsesuccess )
     {
-        std::cout  << "Failed to parse inbox\n" << reader.getFormattedErrorMessages();
+        std::cerr  << "Failed to parse inbox\n" << reader.getFormattedErrorMessages();
         return inbox;
     }
     
@@ -259,7 +270,7 @@ BitInboxMessage BitMessage::getInboxMessageByID(std::string msgID, bool setRead)
     XmlResponse result = m_xmllib->run("getInboxMessageByID", params);
     
     if(result.first == false){
-        std::cout << "Error: getInboxMessageByID failed" << std::endl;
+        std::cerr << "Error: getInboxMessageByID failed" << std::endl;
         BitInboxMessage message("", "", "", base64(""), base64(""), 0, 0, false);
         return message;
     }
@@ -267,7 +278,7 @@ BitInboxMessage BitMessage::getInboxMessageByID(std::string msgID, bool setRead)
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             BitInboxMessage message("", "", "", base64(""), base64(""), 0, 0, false);
             return message;
         }
@@ -280,7 +291,7 @@ BitInboxMessage BitMessage::getInboxMessageByID(std::string msgID, bool setRead)
     bool parsesuccess = reader.parse( ValueString(result.second), root );
     if ( !parsesuccess )
     {
-        std::cout  << "Failed to parse inbox\n" << reader.getFormattedErrorMessages();
+        std::cerr  << "Failed to parse inbox\n" << reader.getFormattedErrorMessages();
         BitInboxMessage message("", "", "", base64(""), base64(""), 0, 0, false);
         return message;
     }
@@ -307,14 +318,14 @@ BitMessageOutbox BitMessage::getAllSentMessages(){
     XmlResponse result = m_xmllib->run("getAllSentMessages", params);
     
     if(result.first == false){
-        std::cout << "Error: getAllSentMessages failed" << std::endl;;
+        std::cerr << "Error: getAllSentMessages failed" << std::endl;;
         return outbox;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             BitInboxMessage message("", "", "", base64(""), base64(""), 0, 0, false);
             return outbox;
         }
@@ -351,14 +362,14 @@ BitSentMessage BitMessage::getSentMessageByID(std::string msgID){
     XmlResponse result = m_xmllib->run("getSentMessageByID", params);
     
     if(result.first == false){
-        std::cout << "Error: getSentMessageByID failed" << std::endl;;
+        std::cerr << "Error: getSentMessageByID failed" << std::endl;;
         return BitSentMessage("", "", "", base64(""), base64(""), 0, 0, "", "");
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return BitSentMessage("", "", "", base64(""), base64(""), 0, 0, "", "");
         }
     }
@@ -370,7 +381,7 @@ BitSentMessage BitMessage::getSentMessageByID(std::string msgID){
     bool parsesuccess = reader.parse( ValueString(result.second), root );
     if ( !parsesuccess )
     {
-        std::cout  << "Failed to parse outbox\n" << reader.getFormattedErrorMessages();
+        std::cerr  << "Failed to parse outbox\n" << reader.getFormattedErrorMessages();
         return BitSentMessage("", "", "", base64(""), base64(""), 0, 0, "", "");
     }
     
@@ -397,14 +408,14 @@ BitSentMessage BitMessage::getSentMessageByAckData(std::string ackData){
     XmlResponse result = m_xmllib->run("getSentMessageByAckData", params);
     
     if(result.first == false){
-        std::cout << "Error: getSentMessageByAckData failed" << std::endl;;
+        std::cerr << "Error: getSentMessageByAckData failed" << std::endl;;
         return BitSentMessage("", "", "", base64(""), base64(""), 0, 0, "", "");
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return BitSentMessage("", "", "", base64(""), base64(""), 0, 0, "", "");
         }
     }
@@ -416,7 +427,7 @@ BitSentMessage BitMessage::getSentMessageByAckData(std::string ackData){
     bool parsesuccess = reader.parse( ValueString(result.second), root );
     if ( !parsesuccess )
     {
-        std::cout  << "Failed to parse outbox\n" << reader.getFormattedErrorMessages();
+        std::cerr  << "Failed to parse outbox\n" << reader.getFormattedErrorMessages();
         return BitSentMessage("", "", "", base64(""), base64(""), 0, 0, "", "");
     }
     
@@ -445,14 +456,14 @@ std::vector<BitSentMessage> BitMessage::getSentMessagesBySender(std::string addr
     XmlResponse result = m_xmllib->run("getSentMessagesBySender", params);
     
     if(result.first == false){
-        std::cout << "Error: getAllSentMessages failed" << std::endl;;
+        std::cerr << "Error: getAllSentMessages failed" << std::endl;;
         return outbox;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             BitInboxMessage message("", "", "", base64(""), base64(""), 0, 0, false);
             return outbox;
         }
@@ -488,14 +499,14 @@ bool BitMessage::trashMessage(std::string msgID){
     XmlResponse result = m_xmllib->run("trashMessage", params);
     
     if(result.first == false){
-        std::cout << "Error: trashMessage failed" << std::endl;
+        std::cerr << "Error: trashMessage failed" << std::endl;
         return false;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return false;
         }
     }
@@ -513,14 +524,14 @@ bool BitMessage::trashSentMessageByAckData(std::string ackData){
     XmlResponse result = m_xmllib->run("trashSentMessageByAckData", params);
     
     if(result.first == false){
-        std::cout << "Error: trashSentMessageByAckData failed" << std::endl;
+        std::cerr << "Error: trashSentMessageByAckData failed" << std::endl;
         return false;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return false;
         }
     }
@@ -547,14 +558,14 @@ std::string BitMessage::sendMessage(std::string fromAddress, std::string toAddre
     XmlResponse result = m_xmllib->run("sendMessage", params);
     
     if(result.first == false){
-        std::cout << "Error: sendMessage failed" << std::endl;
+        std::cerr << "Error: sendMessage failed" << std::endl;
         return "";
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return "";
         }
     }
@@ -576,14 +587,14 @@ std::string BitMessage::sendBroadcast(std::string fromAddress, base64 subject, b
     XmlResponse result = m_xmllib->run("sendBroadcast", params);
     
     if(result.first == false){
-        std::cout << "Error: sendBroadcast failed" << std::endl;
+        std::cerr << "Error: sendBroadcast failed" << std::endl;
         return "";
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return "";
         }
     }
@@ -605,14 +616,14 @@ BitMessageSubscriptionList BitMessage::listSubscriptions(){
     XmlResponse result = m_xmllib->run("listSubscriptions", params);
     
     if(result.first == false){
-        std::cout << "Error: listSubscriptions failed" << std::endl;
+        std::cerr << "Error: listSubscriptions failed" << std::endl;
         return subscriptionList;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return subscriptionList;
         }
     }
@@ -623,7 +634,7 @@ BitMessageSubscriptionList BitMessage::listSubscriptions(){
     bool parsesuccess = reader.parse( ValueString(result.second), root );
     if ( !parsesuccess )
     {
-        std::cout  << "Failed to parse subscription list\n" << reader.getFormattedErrorMessages();
+        std::cerr  << "Failed to parse subscription list\n" << reader.getFormattedErrorMessages();
         return subscriptionList;
     }
     
@@ -655,14 +666,14 @@ bool BitMessage::addSubscription(std::string address, base64 label){
     XmlResponse result = m_xmllib->run("addSubscription", params);
     
     if(result.first == false){
-        std::cout << "Error: createChan failed" << std::endl;
+        std::cerr << "Error: createChan failed" << std::endl;
         return false;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return false;
         }
     }
@@ -680,14 +691,14 @@ bool BitMessage::deleteSubscription(std::string address){
     XmlResponse result = m_xmllib->run("deleteSubscription", params);
     
     if(result.first == false){
-        std::cout << "Error: createChan failed" << std::endl;
+        std::cerr << "Error: createChan failed" << std::endl;
         return false;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return false;
         }
     }
@@ -709,14 +720,14 @@ std::string BitMessage::createChan(base64 password){
     XmlResponse result = m_xmllib->run("createChan", params);
     
     if(result.first == false){
-        std::cout << "Error: createChan failed" << std::endl;
+        std::cerr << "Error: createChan failed" << std::endl;
         return "";
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return "";
         }
     }
@@ -735,14 +746,14 @@ bool BitMessage::joinChan(base64 password, std::string address){
     XmlResponse result = m_xmllib->run("joinChan", params);
     
     if(result.first == false){
-        std::cout << "Error: joinChan failed" << std::endl;
+        std::cerr << "Error: joinChan failed" << std::endl;
         return false;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return false;
         }
     }
@@ -760,14 +771,14 @@ bool BitMessage::leaveChan(std::string address){
     XmlResponse result = m_xmllib->run("leaveChan", params);
     
     if(result.first == false){
-        std::cout << "Error: leaveChan failed" << std::endl;
+        std::cerr << "Error: leaveChan failed" << std::endl;
         return false;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return false;
         }
     }
@@ -789,14 +800,14 @@ void BitMessage::listAddresses(){
     XmlResponse result = m_xmllib->run("listAddresses2", params);
     
     if(result.first == false){
-        std::cout << "Error: listAddresses2 failed" << std::endl;
+        std::cerr << "Error: listAddresses2 failed" << std::endl;
         //return responses;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             //return responses;
         }
     }
@@ -807,7 +818,7 @@ void BitMessage::listAddresses(){
     bool parsesuccess = reader.parse( ValueString(result.second), root );
     if ( !parsesuccess )
     {
-        std::cout  << "Failed to parse configuration\n" << reader.getFormattedErrorMessages();
+        std::cerr << "Failed to parse configuration\n" << reader.getFormattedErrorMessages();
         //return responses;
     }
     
@@ -827,7 +838,7 @@ void BitMessage::listAddresses(){
 }
 
 
-BitMessageAddress BitMessage::createRandomAddress(base64 label, bool eighteenByteRipe, int totalDifficulty, int smallMessageDifficulty){
+void BitMessage::createRandomAddress(base64 label, bool eighteenByteRipe, int totalDifficulty, int smallMessageDifficulty){
 
     Parameters params;
     params.push_back(ValueString(label.encoded()));
@@ -839,20 +850,22 @@ BitMessageAddress BitMessage::createRandomAddress(base64 label, bool eighteenByt
     XmlResponse result = m_xmllib->run("createRandomAddress", params);
     
     if(result.first == false){
-        std::cout << "Error: createRandomAddress failed" << std::endl;
-        return "";
+        std::cerr << "Error: createRandomAddress failed" << std::endl;
+        //return "";
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
-            return "";
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
+            //return "";
         }
     }
     
-    return std::string(ValueString(result.second));
-
+    std::unique_lock<std::mutex> mlock(m_newestCreatedAddressMutex);
+    newestCreatedAddress = std::string(ValueString(result.second));
+    mlock.unlock();
+    
 };
 
 
@@ -873,14 +886,14 @@ std::vector<BitMessageAddress> BitMessage::createDeterministicAddresses(base64 p
     XmlResponse result = m_xmllib->run("createDeterministicAddresses", params);
     
     if(result.first == false){
-        std::cout << "Error: createDeterministicAddresses failed" << std::endl;
+        std::cerr << "Error: createDeterministicAddresses failed" << std::endl;
         return addressList;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return addressList;
         }
     }
@@ -891,7 +904,7 @@ std::vector<BitMessageAddress> BitMessage::createDeterministicAddresses(base64 p
     bool parsesuccess = reader.parse( ValueString(result.second), root );
     if ( !parsesuccess )
     {
-        std::cout  << "Failed to parse address list\n" << reader.getFormattedErrorMessages();
+        std::cerr  << "Failed to parse address list\n" << reader.getFormattedErrorMessages();
         return addressList;
     }
     
@@ -919,14 +932,14 @@ BitMessageAddress BitMessage::getDeterministicAddress(base64 password, int addre
     XmlResponse result = m_xmllib->run("getDeterministicAddress", params);
     
     if(result.first == false){
-        std::cout << "Error: getDeterministicAddress failed" << std::endl;
+        std::cerr << "Error: getDeterministicAddress failed" << std::endl;
         return "";
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return "";
         }
     }
@@ -945,13 +958,13 @@ void BitMessage::listAddressBookEntries(){
     XmlResponse result = m_xmllib->run("listAddressBookEntries", params);
     
     if(result.first == false){
-        std::cout << "Error: listAddressBookEntries failed" << std::endl;
+        std::cerr << "Error: listAddressBookEntries failed" << std::endl;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
         }
     }
     
@@ -961,7 +974,7 @@ void BitMessage::listAddressBookEntries(){
     bool parsesuccess = reader.parse( ValueString(result.second), root );
     if ( !parsesuccess )
     {
-        std::cout  << "Failed to parse address list\n" << reader.getFormattedErrorMessages();
+        std::cerr  << "Failed to parse address list\n" << reader.getFormattedErrorMessages();
     }
     
     const Json::Value addresses = root["addresses"];
@@ -993,19 +1006,19 @@ bool BitMessage::addAddressBookEntry(std::string address, base64 label){
     XmlResponse result = m_xmllib->run("addAddressBookEntry", params);
     
     if(result.first == false){
-        std::cout << "Error: addAddressBookEntry failed" << std::endl;
+        std::cerr << "Error: addAddressBookEntry failed" << std::endl;
         return false;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return false;
         }
     }
     
-    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
+    std::cerr << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
     
     return true;
 
@@ -1020,19 +1033,19 @@ bool BitMessage::deleteAddressBookEntry(std::string address){
     XmlResponse result = m_xmllib->run("deleteAddressBookEntry", params);
     
     if(result.first == false){
-        std::cout << "Error: deleteAddressBookEntry failed" << std::endl;
+        std::cerr << "Error: deleteAddressBookEntry failed" << std::endl;
         return false;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return false;
         }
     }
     
-    std::cout << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
+    std::cerr << "BitMessage API Response: " << std::string(ValueString(result.second)) << std::endl;
     
     return true;
 
@@ -1047,14 +1060,14 @@ bool BitMessage::deleteAddress(std::string address){
     XmlResponse result = m_xmllib->run("deleteAddress", params);
     
     if(result.first == false){
-        std::cout << "Error: deleteAddress failed" << std::endl;
+        std::cerr << "Error: deleteAddress failed" << std::endl;
         return false;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return false;
         }
     }
@@ -1073,14 +1086,14 @@ BitDecodedAddress BitMessage::decodeAddress(std::string address){
     XmlResponse result = m_xmllib->run("decodeAddress", params);
     
     if(result.first == false){
-        std::cout << "Error Accessing BitMessage API" << std::endl;
+        std::cerr << "Error Accessing BitMessage API" << std::endl;
         return BitDecodedAddress("", 0, "", 0);
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return BitDecodedAddress("", 0, "", 0);
         }
     }
@@ -1092,7 +1105,7 @@ BitDecodedAddress BitMessage::decodeAddress(std::string address){
     bool parsesuccess = reader.parse( ValueString(result.second), root );
     if ( !parsesuccess )
     {
-        std::cout  << "Failed to parse configuration\n" << reader.getFormattedErrorMessages();
+        std::cerr  << "Failed to parse configuration\n" << reader.getFormattedErrorMessages();
         return BitDecodedAddress("", 0, "", 0);
     }
     
@@ -1122,14 +1135,14 @@ std::string BitMessage::helloWorld(std::string first, std::string second){
     XmlResponse result = m_xmllib->run("helloWorld", params);
     
     if(result.first == false){
-        std::cout << "Error Accessing BitMessage API" << std::endl;
+        std::cerr << "Error Accessing BitMessage API" << std::endl;
         return "";
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return "";
         }
     }
@@ -1148,18 +1161,18 @@ int BitMessage::add(int x, int y){
     XmlResponse result = m_xmllib->run("add", params);
     
     if(result.first == false){
-        std::cout << "Error: add failed" << std::endl;
+        std::cerr << "Error: add failed" << std::endl;
         return -1;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return -1;
         }
-        std::cout << "Unexpected Response to API Command: add" << std::endl;
-        std::cout << std::string(ValueString(result.second)) << std::endl;
+        std::cerr << "Unexpected Response to API Command: add" << std::endl;
+        std::cerr << std::string(ValueString(result.second)) << std::endl;
         return -1;
     }
     else{
@@ -1178,14 +1191,14 @@ std::string BitMessage::getStatus(std::string ackData){
     XmlResponse result = m_xmllib->run("getStatus", params);
     
     if(result.first == false){
-        std::cout << "Error Accessing BitMessage API" << std::endl;
+        std::cerr << "Error Accessing BitMessage API" << std::endl;
         return "";
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
-            std::cout << std::string(ValueString(result.second)) << std::endl;
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
             return "";
         }
     }
