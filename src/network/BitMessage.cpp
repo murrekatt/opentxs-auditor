@@ -61,7 +61,132 @@ BitMessage::~BitMessage(){
 }
 
 
-/* 
+
+/*
+ * Virtual Functions
+ */
+
+
+bool BitMessage::accessible(){
+    
+    return m_serverAvailable;
+
+}
+
+
+bool BitMessage::createAddress(std::string options=""){
+    
+    try{
+        // Here we will push a request to create a new random address onto the queue
+        // And then immediately request the updated list of addresses
+        std::function<void()> firstCommand = std::bind(&BitMessage::createRandomAddress, this, base64(""), false, 1, 1);
+        bm_queue->addToQueue(firstCommand);
+    
+        std::function<void()> secondCommand = std::bind(&BitMessage::listAddresses, this);
+        bm_queue->addToQueue(secondCommand);
+        return true;
+    }
+    catch(...){
+        return false;
+    }
+}  // Queued
+
+
+bool BitMessage::createDeterministicAddress(std::string key){
+    
+    try{
+        std::function<void()> firstCommand = std::bind(&BitMessage::createRandomAddress, this, base64(""), false, 1, 1);
+        bm_queue->addToQueue(firstCommand);
+    
+        std::function<void()> secondCommand = std::bind(&BitMessage::listAddresses, this);
+        bm_queue->addToQueue(secondCommand);
+        
+        return true;
+    }
+    catch(...){
+        return false;
+    }
+    
+}
+
+
+bool BitMessage::addressAccessible(std::string address){
+    
+    std::unique_lock<std::mutex> mlock(m_localIdentitiesMutex);
+
+    for(int x = 0; x < m_localIdentities.size(); x++){
+            if(m_localIdentities.at(x).getAddress() == address){
+                mlock.unlock();
+            return true;
+        }
+    }
+    mlock.unlock();
+    
+    checkAddresses(); // If the address isn't acccessible, try and fetch the latest
+                     // Address book from the API server for another try later.
+                     // In most cases, you won't be checking for an address that you
+                     // Don't already know about from the addressbook.
+    
+    return false;
+} // Queued
+
+
+
+std::vector<std::string> BitMessage::getAddresses(){
+    
+    std::unique_lock<std::mutex> mlock(m_localAddressBookMutex);
+
+    std::vector<std::string> addresses;
+    for(int x = 0; x < m_localAddressBook.size(); x++){
+        addresses.push_back(m_localAddressBook.at(x).getAddress());
+    }
+    
+    mlock.unlock();
+    
+    return addresses;
+
+} // Queued
+
+bool BitMessage::checkAddresses(){
+    try{
+        std::function<void()> command = std::bind(&BitMessage::listAddresses, this);
+        bm_queue->addToQueue(command);
+        return true;
+        
+    }
+    catch(...){
+        return false;
+    }
+}
+
+
+std::vector<NetworkMail> BitMessage::getInbox(std::string address){return std::vector<NetworkMail>();}
+std::vector<NetworkMail> BitMessage::getAllInboxes(){return std::vector<NetworkMail>();}
+std::vector<NetworkMail> BitMessage::getAllUnread(){return std::vector<NetworkMail>();}
+
+bool BitMessage::checkNewMail(std::string address){return false;} // checks for new mail, returns true if there is new mail in the queue.
+std::vector<NetworkMail> BitMessage::getUnreadMail(std::string address){return std::vector<NetworkMail>();} // You don't want to have to do copies of your whole inbox for every download
+bool BitMessage::deleteMessage(NetworkMail message){return false;} // Any part of the message should be able to be used to delete it from an inbox
+bool BitMessage::markRead(NetworkMail message, bool read){return false;} // By default this marks a given message as read or not, not all API's will support this and should thus return false.
+
+bool BitMessage::sendMail(NetworkMail message){return false;}
+
+
+std::vector<std::string> BitMessage::getSubscriptions(){return std::vector<std::string>();}
+
+bool BitMessage::checkContacts(){
+    
+    try{
+        std::function<void()> command = std::bind(&BitMessage::listAddressBookEntries, this); // push a list address request to the queue.
+        bm_queue->addToQueue(command);
+        return true;
+    }
+    catch(...){
+        return false;
+    }
+}
+
+/*
  * Message Queue Interaction
  */
 
@@ -91,6 +216,16 @@ bool BitMessage::stopQueue(){
         return false;
 }
 
+bool BitMessage::flushQueue(){
+    try{
+        bm_queue->clearQueue();
+        return true;
+    }
+    catch(...){
+        return false;
+    }
+}
+
 int BitMessage::queueSize(){
     if(bm_queue != nullptr){
         return bm_queue->queueSize();
@@ -100,103 +235,6 @@ int BitMessage::queueSize(){
         return 0;
     }
 }
-
-
-
-
-/*
- * Virtual Functions
- */
-
-
-bool BitMessage::accessible(){
-    
-    return m_serverAvailable;
-
-}
-
-
-void BitMessage::createAddress(std::string options=""){
-    
-    // Here we will push a request to create a new random address onto the queue
-    // And then immediately request the updated list of addresses
-    std::function<void()> firstCommand = std::bind(&BitMessage::createRandomAddress, this, base64(""), false, 1, 1);
-    bm_queue->addToQueue(firstCommand);
-    
-    std::function<void()> secondCommand = std::bind(&BitMessage::listAddresses, this);
-    bm_queue->addToQueue(secondCommand);
-}
-
-
-std::string BitMessage::createDeterministicAddress(std::string key){
-    
-    // We will Implement more advanced parsing of the key soon
-    return getDeterministicAddress(base64(key));
-    
-}
-
-
-bool BitMessage::addressAccessible(std::string address){
-    
-    std::unique_lock<std::mutex> mlock(m_localIdentitiesMutex);
-
-    for(int x = 0; x < m_localIdentities.size(); x++){
-            if(m_localIdentities.at(x).getAddress() == address){
-                mlock.unlock();
-            return true;
-        }
-    }
-    mlock.unlock();
-    
-    std::function<void()> command = std::bind(&BitMessage::listAddresses, this); // If the address isn't acccessible, try and fetch the latest
-    bm_queue->addToQueue(command);                                               // Address book from the API server for another try later.
-    
-    return false;
-}
-
-// Defined in Header, BitMessage has publish support.
-//bool BitMessage::publishSupport(){return true;};
-
-
-std::vector<std::string> BitMessage::getAddresses(){
-    
-    std::function<void()> command = std::bind(&BitMessage::listAddresses, this); // push a list address request to the queue.
-    bm_queue->addToQueue(command);
-    
-    std::vector<std::string> addresses;
-    std::unique_lock<std::mutex> mlock(m_localAddressBookMutex);
-
-    for(int x = 0; x < m_localAddressBook.size(); x++){
-        addresses.push_back(m_localAddressBook.at(x).getAddress());
-    }
-    
-    mlock.unlock();
-    return addresses;
-
-}
-
-
-std::vector<NetworkMail> BitMessage::getInbox(std::string address){return std::vector<NetworkMail>();}
-std::vector<NetworkMail> BitMessage::getAllInboxes(){return std::vector<NetworkMail>();}
-std::vector<NetworkMail> BitMessage::getAllUnread(){return std::vector<NetworkMail>();}
-
-bool BitMessage::checkNewMail(std::string address){return false;} // checks for new mail, returns true if there is new mail in the queue.
-std::vector<NetworkMail> BitMessage::getUnreadMail(std::string address){return std::vector<NetworkMail>();} // You don't want to have to do copies of your whole inbox for every download
-bool BitMessage::deleteMessage(NetworkMail message){return false;} // Any part of the message should be able to be used to delete it from an inbox
-bool BitMessage::markRead(NetworkMail message, bool read){return false;} // By default this marks a given message as read or not, not all API's will support this and should thus return false.
-
-bool BitMessage::sendMail(NetworkMail message){return false;}
-
-
-std::vector<std::string> BitMessage::getSubscriptions(){return std::vector<std::string>();}
-
-
-/*
- * Message Queueing
- */
-
-
-
 
 
 

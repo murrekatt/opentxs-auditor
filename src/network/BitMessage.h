@@ -186,13 +186,14 @@ public:
     
     std::string moduleType(){return "BitMessage";}
     
-    void createAddress(std::string options);  // Queued
-    std::string createDeterministicAddress(std::string key); // Not Queued
+    bool createAddress(std::string options);  // Queued
+    bool createDeterministicAddress(std::string key); // Not Queued
     
     // Not yet implemented
      
     bool addressAccessible(std::string address);  // Queued
-    std::vector<std::string> getAddresses();    // Not Queued
+    std::vector<std::string> getAddresses();    // Queued
+    bool checkAddresses();
     
     std::vector<NetworkMail> getInbox(std::string address); // Not Queued
     std::vector<NetworkMail> getAllInboxes();   // Not Queued
@@ -207,6 +208,14 @@ public:
     
     bool publishSupport(){return true;};
     std::vector<std::string> getSubscriptions();
+    
+    bool checkContacts();
+    
+    // Message Queue Interaction
+    bool startQueue();
+    bool stopQueue();
+    bool flushQueue();
+    int queueSize();
     
         
     //
@@ -300,11 +309,6 @@ public:
     // Extra BitMessage Options (some of these are pass-through functions not related to the API)
 
     void setTimeout(int timeout);
-    
-    // Message Queue Interaction
-    bool startQueue();
-    bool stopQueue();
-    int queueSize();
     
     
 private:

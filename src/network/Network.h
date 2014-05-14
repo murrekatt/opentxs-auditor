@@ -89,18 +89,20 @@ public:
     
     virtual std::string moduleType(){return "";}
     
-    virtual void createAddress(std::string options=""){;}
-    virtual std::string createDeterministicAddress(std::string key){return "";}
+    virtual bool createAddress(std::string options=""){return false;}
+    virtual bool createDeterministicAddress(std::string key){return false;}
     
     virtual bool addressAccessible(std::string address){return false;}
     virtual std::vector<std::string> getAddresses(){return std::vector<std::string>();}
+    virtual bool checkAddresses(){return false;} // Asks the network interface to manually check for new owned addresses.
     
+    virtual bool checkNewMail(){return false;} // Asks the network interface to manually check for new messages
+    virtual bool newMailExists(std::string address){return false;} // checks for new mail, returns true if there is new mail in the queue.
     
     virtual std::vector<NetworkMail> getInbox(std::string address){return std::vector<NetworkMail>();}
     virtual std::vector<NetworkMail> getAllInboxes(){return std::vector<NetworkMail>();}
     virtual std::vector<NetworkMail> getAllUnread(){return std::vector<NetworkMail>();}
     
-    virtual bool checkNewMail(std::string address){return false;} // checks for new mail, returns true if there is new mail in the queue.
     virtual std::vector<NetworkMail> getUnreadMail(std::string address){return std::vector<NetworkMail>();} // You don't want to have to do copies of your whole inbox for every download
     virtual bool deleteMessage(NetworkMail message){return false;} // Any part of the message should be able to be used to delete it from an inbox
     virtual bool markRead(NetworkMail message, bool read=true){return false;} // By default this marks a given message as read or not, not all API's will support this and should thus return false.
@@ -118,9 +120,10 @@ public:
     
     // Functions for importing/exporting from BitMessage server addressbook
     
+    virtual bool checkContacts(){return false;} // Asks the API to refresh its list of contacts.
+    
     virtual std::string getLabel(std::string address){return "";}
     virtual bool setLabel(std::string label, std::string address){return false;}
-    
     virtual std::string getAddressFromLabel(std::string label){return "";}
     
     virtual bool addContact(std::string label, std::string address){return false;}
@@ -129,9 +132,12 @@ public:
     virtual std::vector<std::pair<std::string, std::string> > getAllContacts(){return std::vector<std::pair<std::string, std::string> >();}
 
     // Queue Interaction Functions
+    // Not all API's will have queuing.
+    
+    virtual bool startQueue(){return false;}
+    virtual bool stopQueue(){return false;}
     virtual bool flushQueue(){return false;} // Forces a flush of the message queue.
     virtual int queueSize(){return 0;}
-    
     
     
 private:
