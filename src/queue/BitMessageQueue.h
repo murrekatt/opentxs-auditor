@@ -33,7 +33,7 @@ public:
     
 protected:
     
-    std::atomic<bool> m_stop;
+    std::atomic<bool> m_stop;  
     void run(){ while(!m_stop){parseNextMessage();} }; // Obviously this will be our message parsing loop
     
 private:

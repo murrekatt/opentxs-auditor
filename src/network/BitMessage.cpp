@@ -28,6 +28,8 @@ BitMessage::BitMessage(std::string commstring) : NetworkModule(commstring) {
     // Runs to setup our counter
     checkAlive();
     
+    initializeUserData();
+    
     // Thread Handler
     bm_queue = new BitMessageQueue(this);
     
@@ -47,13 +49,13 @@ BitMessage::~BitMessage(){
 
     // Clean up Objects
     
-    if(!m_forceKill)  // If we haven't asked for a force kill
-        while(bm_queue->processing()){
-            ; // If we're in the middle of processing, don't kill the message queue
-        }
+  //  if(!m_forceKill)  // If we haven't asked for a force kill
+  //      while(bm_queue->processing()){
+  //          ; // If we're in the middle of processing, don't kill the message queue.
+  //      }
     
-    delete m_xmllib;
     delete bm_queue;  // Queue will be stopped automatically upon deletion
+    delete m_xmllib;
     
     std::cout << "Done Cleaning up BitMessage Class" << std::endl; // Temporary
 }
@@ -68,8 +70,10 @@ bool BitMessage::startQueue(){
     if(bm_queue != nullptr){
         if(bm_queue->start())   // Should also have checks to determine if queue was already started.
             return true;
-        else
+        else{
+            std::cout << "If you are seeing this, something went terribly wrong: bm_queue is a nullptr" << std::endl;
             return false;
+        }
     }
     else
         return false;
@@ -133,14 +137,15 @@ std::string BitMessage::createDeterministicAddress(std::string key){
 
 bool BitMessage::addressAccessible(std::string address){
     
-    std::function<void()> command = std::bind(&BitMessage::listAddresses, this);
-    bm_queue->addToQueue(command);
-    
     for(int x = 0; x < m_localIdentities.size(); x++){
             if(m_localIdentities.at(x).getAddress() == address){
             return true;
         }
     }
+    
+    std::function<void()> command = std::bind(&BitMessage::listAddresses, this);
+    bm_queue->addToQueue(command);
+    
     return false;
 }
 
@@ -149,6 +154,11 @@ bool BitMessage::addressAccessible(std::string address){
 
 
 std::vector<std::string> BitMessage::getAddresses(){
+    
+    std::vector<std::string> addresses;
+    for(int x = 0; x < m_localAddressBook.size(); x++){
+        addresses.push_back(m_localAddressBook.at(x).getAddress());
+    }
     
     return std::vector<std::string>();
 
@@ -926,7 +936,7 @@ BitMessageAddress BitMessage::getDeterministicAddress(base64 password, int addre
 };
 
 
-BitMessageAddressBook BitMessage::listAddressBookEntries(){
+void BitMessage::listAddressBookEntries(){
 
     Parameters params;
     
@@ -936,14 +946,12 @@ BitMessageAddressBook BitMessage::listAddressBookEntries(){
     
     if(result.first == false){
         std::cout << "Error: listAddressBookEntries failed" << std::endl;
-        return addressBook;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
             std::cout << std::string(ValueString(result.second)) << std::endl;
-            return addressBook;
         }
     }
     
@@ -954,7 +962,6 @@ BitMessageAddressBook BitMessage::listAddressBookEntries(){
     if ( !parsesuccess )
     {
         std::cout  << "Failed to parse address list\n" << reader.getFormattedErrorMessages();
-        return addressBook;
     }
     
     const Json::Value addresses = root["addresses"];
@@ -970,7 +977,9 @@ BitMessageAddressBook BitMessage::listAddressBookEntries(){
         
     }
     
-    return addressBook;
+    std::unique_lock<std::mutex> mlock(m_localAddressBookMutex);
+    m_localAddressBook = addressBook;
+    mlock.unlock();
     
 };
 
@@ -1210,7 +1219,6 @@ void BitMessage::checkAlive(){
     
 }
 
-
 void BitMessage::parseCommstring(std::string commstring){
     
     std::vector<std::string> parsedList;
@@ -1242,3 +1250,10 @@ void BitMessage::parseCommstring(std::string commstring){
     
 }
 
+void BitMessage::initializeUserData(){
+    
+    listAddresses(); // Populates Local Owned Addresses
+    listAddressBookEntries();  // Populates address book data, for remote users we have addresses for.
+    
+    
+}

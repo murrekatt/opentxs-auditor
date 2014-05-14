@@ -78,15 +78,18 @@ bool BitMessageQueue::parseNextMessage(){
     
     std::unique_lock<std::mutex> mlock(m_processing);  // Don't let other functions interfere with our message parsing
     
-    m_working = true; // Notify our atomic boolean that we are in the middle of a process
+//    m_working = true; // Notify our atomic boolean that we are in the middle of a process
     
     std::function<void()> message = MasterQueue.pop();  // Pull out our function to run
     message();
     
     mlock.unlock();
-    m_conditional.notify_one(); // Let other functions know that we're done and they can continue
+    m_conditional.notify_one(); // Let other functions know that we're done and they can continue.
+                                // This is primarily for when a request comes in to shut down the queue
+                                // While an action is in progress. This will notify our stop handler that it is safe
+                                // To shut down the thread.
     
-    m_working = false; // Notify our atomic boolean that we are done with our processing
+//    m_working = false; // Notify our atomic boolean that we are done with our processing
 
     
     return true;

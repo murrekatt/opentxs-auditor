@@ -180,30 +180,30 @@ public:
     ~BitMessage();
     
     void forceKill(bool kill){m_forceKill = kill;};
+    
     // Virtual Function Implementations
     bool accessible();
     
     std::string moduleType(){return "BitMessage";}
     
-    std::string createAddress(std::string options);
-    std::string createDeterministicAddress(std::string key);
+    std::string createAddress(std::string options);  // Not Queued
+    std::string createDeterministicAddress(std::string key); // Not Queued
     
     // Not yet implemented
      
-    bool addressAccessible(std::string address);
-    std::vector<std::string> getAddresses();
+    bool addressAccessible(std::string address);  // Not Queued
+    std::vector<std::string> getAddresses();    // Not Queued
     
+    std::vector<NetworkMail> getInbox(std::string address); // Not Queued
+    std::vector<NetworkMail> getAllInboxes();   // Not Queued
+    std::vector<NetworkMail> getAllUnread();    // Not Queued
     
-    std::vector<NetworkMail> getInbox(std::string address);
-    std::vector<NetworkMail> getAllInboxes();
-    std::vector<NetworkMail> getAllUnread();
+    bool checkNewMail(std::string address); // checks for new mail, returns true if there is new mail in the queue. // Not Queued
+    std::vector<NetworkMail> getUnreadMail(std::string address); // You don't want to have to do copies of your whole inbox for every download  // Not Queued
+    bool deleteMessage(NetworkMail message); // Any part of the message should be able to be used to delete it from an inbox    // Not Queued
+    bool markRead(NetworkMail message, bool read=true); // By default this marks a given message as read or not, not all API's will support this and should thus return false.  // Not Queued
     
-    bool checkNewMail(std::string address); // checks for new mail, returns true if there is new mail in the queue.
-    std::vector<NetworkMail> getUnreadMail(std::string address); // You don't want to have to do copies of your whole inbox for every download
-    bool deleteMessage(NetworkMail message); // Any part of the message should be able to be used to delete it from an inbox
-    bool markRead(NetworkMail message, bool read=true); // By default this marks a given message as read or not, not all API's will support this and should thus return false.
-    
-    bool sendMail(NetworkMail message);
+    bool sendMail(NetworkMail message); // Not Queued
     
     bool publishSupport(){return true;};
     std::vector<std::string> getSubscriptions();
@@ -277,7 +277,7 @@ public:
     BitMessageAddress getDeterministicAddress(base64 password, int addressVersionNumber=4, int streamNumber=1);
     BitMessageAddress getDeterministicAddress(std::string password, int addressVersionNumber=4, int streamNumber=1){return getDeterministicAddress(base64(password), addressVersionNumber, streamNumber);}
     
-    BitMessageAddressBook listAddressBookEntries();
+    void listAddressBookEntries();
     
     bool addAddressBookEntry(std::string address, base64 label);
     bool addAddressBookEntry(std::string address, std::string label){return addAddressBookEntry(address, base64(label));}
@@ -329,6 +329,8 @@ private:
     std::string m_username;
 
     bool m_serverAvailable;
+    bool m_forceKill;  // If this is set, the class will ignore the status of the queue processing and force a shut down of the network.
+
     
     // Communication Library, XmlRPC in this case
     XmlRPC *m_xmllib;
@@ -338,20 +340,24 @@ private:
     
     void setServerAlive(bool alive);
     void parseCommstring(std::string commstring);
-    
-    void checkAlive();
+    void checkAlive(); // Forces a health check of the BitMessage API Server
     
     
     // Message Queing Plugs
     
     friend BitMessageQueue;
     
-    BitMessageQueue *bm_queue;
+    BitMessageQueue *bm_queue; // Our Message Queue friend class.
+    
+    void initializeUserData(); // Manually pulls down startup data for BitMessage Class.
     
     // Message Queue Variables
+    
     std::mutex m_localIdentitiesMutex;
-    BitMessageIdentities m_localIdentities;
-    bool m_forceKill;
+    BitMessageIdentities m_localIdentities;   // The addresses we have the ability to decrypt messages for.
+    
+    std::mutex m_localAddressBookMutex;
+    BitMessageAddressBook m_localAddressBook;   // Remote user addresses.
     
 };
 
