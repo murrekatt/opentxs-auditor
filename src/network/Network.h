@@ -8,6 +8,7 @@
 #include <vector>
 #include <ctime>
 #include <utility>
+#include <iostream>
 
 
 // A counter Template to count the number of modules loaded or alive
@@ -54,7 +55,7 @@ class NetworkMail {
     
 public:
     
-    NetworkMail(std::string from="", std::string to="", std::string subject="", std::string message="", std::time_t received=0, std::time_t sent=0) : m_from(from), m_to(to), m_subject(subject), m_mail(message), m_received(received), m_sent(sent) {}
+    NetworkMail(std::string from="", std::string to="", std::string subject="", std::string message="", bool isRead=false, std::time_t received=0, std::time_t sent=0) : m_from(from), m_to(to), m_subject(subject), m_mail(message), m_readStatus(isRead), m_received(received), m_sent(sent) {}
     
     std::string getFrom(){return m_from;}
     std::string getTo(){return m_to;}
@@ -62,6 +63,8 @@ public:
     std::string getMessage(){return m_mail;}
     std::time_t getReceivedTime(){return m_received;}
     std::time_t getSentTime(){return m_sent;}
+    void        setRead(bool status){m_readStatus = status;};
+    bool        getRead(){ return m_readStatus;}
     
 private:
   
@@ -72,6 +75,9 @@ private:
     
     std::time_t m_received;
     std::time_t m_sent;
+    
+    bool m_readStatus;
+        
 };
 
 
@@ -97,7 +103,9 @@ public:
     virtual bool checkAddresses(){return false;} // Asks the network interface to manually check for new owned addresses.
     
     virtual bool checkMail(){return false;} // Asks the network interface to manually check for messages
-    virtual bool newMailExists(std::string address){return false;} // checks for new mail, returns true if there is new mail in the queue.
+    virtual bool newMailExists(std::string address=""){return false;} // checks for new mail, returns true if there is new mail in the queue.
+                                                                   // In BitMessage this checks for unread mail in the queue, it will return true
+                                                                   // If a read message has been marked unread manually.
     
     virtual std::vector<NetworkMail> getInbox(std::string address){return std::vector<NetworkMail>();}
     virtual std::vector<NetworkMail> getAllInboxes(){return std::vector<NetworkMail>();}

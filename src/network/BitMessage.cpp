@@ -5,7 +5,7 @@
 #include "BitMessage.h"
 #include "json/json.h"
 #include "base64.h"
-#include "VectorHelpers.h"
+#include "VectorHelp.h"
 
 #include <string>
 #include <iostream>
@@ -158,17 +158,40 @@ bool BitMessage::checkAddresses(){
 
 bool BitMessage::checkMail(){
     try{
-        //std::function<void()> command = std::bind(&BitMessage::listAddresses, this);
-        //bm_queue->addToQueue(command);
+        std::function<void()> command = std::bind(&BitMessage::getAllInboxMessages, this);
+        bm_queue->addToQueue(command);
         return true;
     }
     catch(...){
         return false;
 
     }
-} // checks for new mail, returns true if there is new mail in the queue.
+} // checks for new mail, returns true if there is new mail in the queue. // Queued
 
-bool BitMessage::newMailExists(std::string address){return false;}
+bool BitMessage::newMailExists(std::string address){
+    
+    if(m_localInbox.size() == 0){
+        checkMail();
+    }
+    
+    if(address != ""){
+        for(int x=0; x<m_localInbox.size(); x++){
+            if(m_localInbox.at(x).getTo() == address && m_localInbox.at(x).getRead() == true)
+                return true;
+        }
+    }
+    else{
+        for(int x = 0; x < m_localInbox.size(); x++){
+            if(m_localInbox.at(x).getRead() == true)
+                return true;
+        }
+    }
+    
+    return false;
+
+}
+
+
 std::vector<NetworkMail> BitMessage::getUnreadMail(std::string address){return std::vector<NetworkMail>();} // You don't want to have to do copies of your whole inbox for every download
 bool BitMessage::deleteMessage(NetworkMail message){return false;} // Any part of the message should be able to be used to delete it from an inbox
 bool BitMessage::markRead(NetworkMail message, bool read){return false;} // By default this marks a given message as read or not, not all API's will support this and should thus return false.
@@ -302,7 +325,8 @@ void BitMessage::getAllInboxMessages(){
     // Populate our local inbox.
 
     for(int x=0; x<inbox.size(); x++){
-        NetworkMail l_mail(inbox.at(x).getFromAddress(), inbox.at(x).getToAddress(), inbox.at(x).getSubject().decoded(), inbox.at(x).getMessage().decoded(), inbox.at(x).getReceivedTime());
+        NetworkMail l_mail(inbox.at(x).getFromAddress(), inbox.at(x).getToAddress(), inbox.at(x).getSubject().decoded(), inbox.at(x).getMessage().decoded(), inbox.at(x).getRead(), inbox.at(x).getReceivedTime() );
+        
         m_localInbox.push_back(l_mail);
     }
     std::reverse(m_localInbox.begin(), m_localInbox.end());  // New messages at the front

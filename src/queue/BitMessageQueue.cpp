@@ -81,6 +81,7 @@ bool BitMessageQueue::parseNextMessage(){
 //    m_working = true; // Notify our atomic boolean that we are in the middle of a process
     
     std::function<void()> message = MasterQueue.pop();  // Pull out our function to run
+    
     message();
     
     mlock.unlock();
