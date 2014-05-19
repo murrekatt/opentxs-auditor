@@ -107,8 +107,8 @@ public:
                                                                    // In BitMessage this checks for unread mail in the queue, it will return true
                                                                    // If a read message has been marked unread manually.
     
-    virtual std::vector<NetworkMail> getInbox(std::string address){return std::vector<NetworkMail>();}
-    virtual std::vector<NetworkMail> getAllInboxes(){return std::vector<NetworkMail>();}
+    virtual std::vector<NetworkMail> getInbox(std::string address=""){return std::vector<NetworkMail>();}
+    virtual std::vector<NetworkMail> getAllInboxes(){return getInbox();}
     virtual std::vector<NetworkMail> getAllUnread(){return std::vector<NetworkMail>();}
     
     virtual std::vector<NetworkMail> getUnreadMail(std::string address){return std::vector<NetworkMail>();} // You don't want to have to do copies of your whole inbox for every download

@@ -196,14 +196,16 @@ public:
     bool checkAddresses(); // Queued
     
     bool checkMail(); // Asks the network interface to manually check for messages // Queued
-    bool newMailExists(std::string address=""); // checks for new mail, returns true if there is new mail in the queue. // Not Queued
+    bool newMailExists(std::string address=""); // checks for new mail, returns true if there is new mail in the queue. // "Queued", will queue new mail request if inbox is empty.
+    
+    std::vector<NetworkMail> getInbox(std::string address=""); // Not Queued
+    std::vector<NetworkMail> getAllInboxes();  // Not Queued
+    std::vector<NetworkMail> getAllUnread();    // Not Queued
+    
     std::vector<NetworkMail> getUnreadMail(std::string address); // You don't want to have to do copies of your whole inbox for every download  // Not Queued
     bool deleteMessage(NetworkMail message); // Any part of the message should be able to be used to delete it from an inbox    // Not Queued
     bool markRead(NetworkMail message, bool read=true); // By default this marks a given message as read or not, not all API's will support this and should thus return false.  // Not Queued
     
-    std::vector<NetworkMail> getInbox(std::string address); // Not Queued
-    std::vector<NetworkMail> getAllInboxes();   // Not Queued
-    std::vector<NetworkMail> getAllUnread();    // Not Queued
     
     bool sendMail(NetworkMail message); // Not Queued
     

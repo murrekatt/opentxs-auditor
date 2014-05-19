@@ -176,13 +176,14 @@ bool BitMessage::newMailExists(std::string address){
     
     if(address != ""){
         for(int x=0; x<m_localInbox.size(); x++){
-            if(m_localInbox.at(x).getTo() == address && m_localInbox.at(x).getRead() == true)
+
+            if(m_localInbox.at(x).getTo() == address && m_localInbox.at(x).getRead() == false)
                 return true;
         }
     }
     else{
         for(int x = 0; x < m_localInbox.size(); x++){
-            if(m_localInbox.at(x).getRead() == true)
+            if(m_localInbox.at(x).getRead() == false)
                 return true;
         }
     }
@@ -198,7 +199,7 @@ bool BitMessage::markRead(NetworkMail message, bool read){return false;} // By d
 
 
 std::vector<NetworkMail> BitMessage::getInbox(std::string address){return std::vector<NetworkMail>();}
-std::vector<NetworkMail> BitMessage::getAllInboxes(){return std::vector<NetworkMail>();}
+std::vector<NetworkMail> BitMessage::getAllInboxes(){return getInbox();}
 std::vector<NetworkMail> BitMessage::getAllUnread(){return std::vector<NetworkMail>();}
 
 bool BitMessage::sendMail(NetworkMail message){return false;}
