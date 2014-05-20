@@ -11,7 +11,7 @@ env = Environment()
 
 
 env.ParseConfig( 'xmlrpc-c-config c++2 client --cflags --libs' )
-env.Append(CPPPATH = ['/usr/local/include/','src','src/crypto','src/parsers','src/parsers/jsoncpp','src/network','src/queue'])
+env.Append(CPPPATH = ['/usr/local/include/','src','src/crypto','src/parsers','src/parsers/jsoncpp','src/network','src/queue','src/util'])
 env.Append(LIBPATH = ['/usr/local/lib/'])
 env.Append(LIBS = ['xmlrpc_client++','boost_system','boost_program_options'])
 #env.Append(CXXFLAGS = ['-std=c++11','-stdlib=libc++'])
@@ -24,6 +24,7 @@ env.Append(CXXFLAGS = ['-std=c++11'])
 sources = Split("""
 src/parsers/MainConfigParser.cpp
 src/parsers/jsoncpp/jsoncpp.cpp
+src/queue/BitMessageQueue.cpp
 src/network/Network.cpp
 src/network/BitMessage.cpp
 src/network/XmlRPC.cpp
