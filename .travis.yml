@@ -1,0 +1,19 @@
+os:
+  - linux
+language: cpp
+compiler:
+  - gcc
+  - clang
+install:
+  - sudo apt-get install libprotobuf-dev protobuf-compiler
+script: ./autogen.sh && ./configure && make -j 2
+branches:
+  only:
+    - master
+    - develop
+notifications:
+  recipients:
+    - ot-dev@opentransactions.org
+  email:
+    on_success: change
+    on_failure: always
