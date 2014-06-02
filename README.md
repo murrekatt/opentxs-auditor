@@ -1,7 +1,7 @@
 Voting Pool Audit Service
 =========================
 
-[![Build Status](https://travis-ci.org/Monetas/vp-auditservice.svg?branch=develop)](https://travis-ci.org/Monetas/vp-auditservice)
+[![Build Status](https://travis-ci.org/monetas/vp-auditservice.svg?branch=develop)](https://travis-ci.org/monetas/vp-auditservice)
 
 Auditing component of the [Open-Transactions](http://opentransactions.org) Voting Pool.
 
