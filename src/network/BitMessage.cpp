@@ -1,11 +1,9 @@
-//
-//  BitMessage.cpp
-//
-
 #include "BitMessage.h"
-#include "json/json.h"
+#include "../parsers/jsoncpp/json/json.h"
 #include "base64.h"
 #include "VectorHelp.h"
+
+#include <boost/tokenizer.hpp>
 
 #include <string>
 #include <iostream>
@@ -15,9 +13,6 @@
 #include <thread>
 #include <chrono>
 #include <functional>
-
-#include<boost/tokenizer.hpp>
-
 
 BitMessage::BitMessage(std::string commstring) : NetworkModule(commstring) {
 

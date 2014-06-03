@@ -1,18 +1,18 @@
 #pragma once
-//
-//  BitMessage.h
-//  
 
-#include <memory>
-#include <string>
-#include <ctime>
-#include <mutex>
 #include "Network.h"
 #include "XmlRPC.h"
 #include "base64.h"
 #include "WorkQueue.h"
 #include "MsgQueue.h"
 #include "BitMessageQueue.h"
+
+#include <memory>
+#include <string>
+#include <mutex>
+#include <atomic>
+
+#include <ctime>
 
 typedef std::string BitMessageAddress;
 
@@ -372,7 +372,6 @@ private:
     std::mutex m_localInboxMutex;
     std::vector<NetworkMail> m_localInbox;
     std::atomic<bool> m_newMailExists;
-    
 };
 
 

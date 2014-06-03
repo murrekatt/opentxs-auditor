@@ -1,14 +1,7 @@
-//
-//  MainConfigParser.cpp
-//  Auditor
-//
-
-
 #include "MainConfigParser.h"
 #include "constants.h"
 #include "BitMessage.h"
 
-#include <boost/filesystem.hpp>
 #include <boost/progress.hpp>
 #include <boost/program_options.hpp>
 #include <boost/bind.hpp>

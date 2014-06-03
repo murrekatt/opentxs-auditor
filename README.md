@@ -16,9 +16,11 @@ Dependencies
 ============
 
 * xmlrpc-c (on OSX, compiled with "CXXFLAGS='-std=c++11 -stdlib=libc++' ./configure --enable-libxml2-backend; make -j2")
+* jsoncpp
 * libxml2
 * boost >= 1.54.0
-
+* [Google Protocol Buffers](https://code.google.com/p/protobuf/)
+* [Google Test](https://code.google.com/p/googletest/)
 
 Known Issues
 ============
