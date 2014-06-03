@@ -1,3 +1,4 @@
+#pragma once
 //
 //  MsgQueue.h
 //
@@ -23,7 +24,7 @@ public:
         queue_.pop();
         return item;
     }
-    
+
     void pop(T& item)
     {
         std::unique_lock<std::mutex> mlock(mutex_);
@@ -49,6 +50,22 @@ public:
         queue_.push(std::move(item));
         mlock.unlock();
         cond_.notify_one();
+    }
+    
+    int size()
+    {
+        std::unique_lock<std::mutex> mlock(mutex_);
+        int size = queue_.size();
+        mlock.unlock();
+        return size;
+    }
+    
+    void clear()
+    {
+        std::unique_lock<std::mutex> mlock(mutex_);
+        while(!queue_.empty())
+            queue_.pop();
+        mlock.unlock();
     }
     
 private:

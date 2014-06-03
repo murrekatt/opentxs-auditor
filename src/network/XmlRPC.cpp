@@ -38,11 +38,13 @@ XmlResponse XmlRPC::run(std::string methodName, std::vector<xmlrpc_c::value> par
         
         for(int i=0; i < parameters.size(); i++){
             xmlrpc_c::value newParameter(parameters.at(i));
-            params.addc(newParameter);
+            // TODO: params.addc(newParameter);
         }
         
         // Construct the Server URL
-        std::string const serverUrl(m_serverurl + ":" + std::to_string(m_port));
+        char port_string[10];
+        sprintf(port_string, "%d", m_port);
+        std::string const serverUrl(m_serverurl + ":" + port_string);
         xmlrpc_c::carriageParm_http0 carriageParams(serverUrl);
 
         // Check That Auth Requirements have been met
