@@ -15,7 +15,7 @@ TBD
 Dependencies
 ============
 
-* xmlrpc-c (on OSX, compiled with "CXXFLAGS='-std=c++11 -stdlib=libc++' ./configure --enable-libxml2-backend; make -j2")
+* xmlrpc-c
 * jsoncpp
 * libxml2
 * boost >= 1.54.0
