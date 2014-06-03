@@ -1,14 +1,14 @@
 #pragma once
-//
-//  BitMessageQueue.h
-//  
-#include "BitMessage.h"
 
+#ifndef _VP_QUEUE_BITMESSAGEQUEUE_H_
+#define _VP_QUEUE_BITMESSAGEQUEUE_H_
+
+#include "BitMessage.h"
+#include <atomic>
 #include <mutex>
 #include <condition_variable>
 
 class BitMessage;
-
 
 class BitMessageQueue {
     
@@ -32,14 +32,10 @@ public:
     // Use boost::chrono?
     
 protected:
-    
     std::atomic<bool> m_stop;  
     void run(){ while(!m_stop){parseNextMessage();} }; // Obviously this will be our message parsing loop
     
 private:
-    
-    // Variables
-    
     std::thread m_thread;
     std::mutex m_processing;
     std::condition_variable m_conditional;
@@ -50,8 +46,7 @@ private:
     
     MsgQueue<std::function<void()>> MasterQueue;
      
-    // Functions
-    
     bool parseNextMessage();
-    
 };
+
+#endif // _VP_QUEUE_BITMESSAGEQUEUE_H_
