@@ -14,7 +14,8 @@ install:
   - cd gtest && mkdir build && cd build && cmake .. && make
   - cd ../..
 script:
-  - export CC="g++-4.8"
+  - export CC="gcc-4.8"
+  - export CXX="g++-4.8"
   - ./autogen.sh && ./configure && make && make check
 branches:
   only:
