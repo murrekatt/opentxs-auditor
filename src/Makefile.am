@@ -5,7 +5,7 @@ bin_PROGRAMS		=	vpas
 
 vpas_SOURCES		=	$(vpas_sources) $(vpas_headers)
 
-vpas_CXXFLAGS		=	-std=c++11			\
+vpas_CXXFLAGS		=	$(AM_CXXFLAGS)			\
 				-I$(vpasdir)			\
 				-I$(vpasdir)/crypto		\
 				-I$(vpasdir)/network		\
