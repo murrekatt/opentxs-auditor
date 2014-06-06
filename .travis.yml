@@ -3,13 +3,14 @@ os:
 language: cpp
 compiler:
   - clang
-before_install:
-  - sudo apt-get install libboost-all-dev
+  - gcc
+before_install: ./scripts/travis/install-deps.sh
 install:
   - svn checkout http://googletest.googlecode.com/svn/trunk/ gtest
   - cd gtest && mkdir build && cd build && cmake .. && make
   - cd ../..
 script:
+  - ./scripts/travis/cppcheck_wrapper.sh ./src
   - ./autogen.sh && ./configure && make && make check
 branches:
   only:
