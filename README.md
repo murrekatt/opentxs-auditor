@@ -15,11 +15,8 @@ TBD
 Dependencies
 ============
 
-* xmlrpc-c
-* jsoncpp
-* libxml2
+* [libbmwrapper](https://github.com/monetas/libbmwrapper)
 * boost >= 1.54.0
-* [Google Protocol Buffers](https://code.google.com/p/protobuf/)
 * [Google Test](https://code.google.com/p/googletest/)
 
 Known Issues

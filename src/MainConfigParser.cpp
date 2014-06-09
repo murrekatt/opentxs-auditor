@@ -1,5 +1,4 @@
 #include "MainConfigParser.h"
-#include "constants.h"
 #include "BitMessage.h"
 
 #include <boost/progress.hpp>
@@ -49,13 +48,11 @@ bool MainConfigParser::parse(){
         po::notify(vm);
         
         if (vm.count("help")) {
-            std::cout << g_versionString << std::endl;
             std::cout << desc << std::endl;
             std::cout << network << std::endl;
             exit(0);
         }
         if (vm.count("version")) {
-            std::cout << g_versionString << std::endl;
             exit(0);
         }
         
@@ -65,7 +62,6 @@ bool MainConfigParser::parse(){
         std::ifstream ifs(configpath.c_str());
         if(!ifs)
         {
-            std::cout << g_versionString << std::endl;
             std::cout << std::endl;
             //std::cout << "Usage:" << std::endl;
             std::cout << desc << std::endl;
