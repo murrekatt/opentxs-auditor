@@ -246,7 +246,7 @@ fi
 AC_SUBST([AM_CXXFLAGS],	["$DBG_CXXFLAGS $REL_CXXFLAGS $WARN_CXXFLAGS $CXX11_FLAGS $DEPS_CFLAGS"])
 
 AC_CONFIG_FILES([Makefile
-                 src/Makefile
-                 tests/Makefile])
+		 src/Makefile
+		 tests/Makefile])
 
 AC_OUTPUT
