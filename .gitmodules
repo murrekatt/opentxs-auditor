@@ -4,3 +4,6 @@
 [submodule "submodules/jsoncpp"]
 	path = submodules/jsoncpp
 	url = https://github.com/monetas/JsonCpp.git
+[submodule "submodules/jsonrpc-cpp"]
+	path = submodules/jsonrpc-cpp
+	url = https://github.com/monetas/JsonRpc-Cpp.git
