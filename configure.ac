@@ -1,7 +1,7 @@
 #  
 #
 AC_PREREQ([2.61])
-AC_INIT([vp-auditservice],m4_esyscmd(tr -d '\n' <VERSION), [info@monetas.net],[vp-auditservice],[http://opentransactions.org])
+AC_INIT([opentxs-auditor],m4_esyscmd(tr -d '\n' <VERSION), [info@monetas.net],[opentxs-auditor],[http://opentransactions.org])
 AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_HEADERS([config.h])
 
@@ -201,7 +201,7 @@ AM_CONDITIONAL([ENABLE_DEBUG], [test x$debug == x"true"])
 
 
 AC_ARG_ENABLE([release],
-	AS_HELP_STRING([--enable-release],[enable release, default: no]),
+	AS_HELP_STRING([--enable-release],[enable release, default: yes]),
 	[case "${enableval}" in
 		yes) release=true ;;
 		no)  release=false ;;
