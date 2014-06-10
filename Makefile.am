@@ -7,7 +7,7 @@ ACLOCAL_AMFLAGS = -I build-aux/m4
 
 SUBDIRS = src tests
 
-## Open-Transactions Installs ##
+## opentxs-auditor Installs ##
 
 #### autogen.sh
 

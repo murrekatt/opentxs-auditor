@@ -1,15 +1,17 @@
+bin_PROGRAMS		= 	auditor
 
-vpasdir			=	.
+auditor_SOURCES		= 	$(auditor_sources) $(auditor_headers)
 
-bin_PROGRAMS		=	vpas
+auditor_CXXFLAGS	= 	$(AM_CXXFLAGS) $(BOOST_CPPFLAGS)
 
-vpas_SOURCES		=	$(vpas_sources) $(vpas_headers)
+auditor_LDFLAGS		=	$(BOOST_LDFLAGS)
 
-vpas_CXXFLAGS		=	$(AM_CXXFLAGS)			\
-				-I$(vpasdir)
+auditor_LDADD 		=	$(DEPS_LIBS)
 
-vpas_LDADD		=	
+auditor_sources		= 	BtcdWalletClient.cpp \
+				Auditor.cpp \
+				main.cpp
 
-vpas_sources		=	main.cpp
-
-vpas_headers		=	
+auditor_headers		= 	WalletClient.hpp \
+				BtcdWalletClient.hpp \
+				Auditor.hpp

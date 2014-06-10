@@ -184,7 +184,7 @@ AM_CONDITIONAL(ENABLE_WARNINGS, test x"$warnings" == x"true")
 if test x"$warnings" == x"true"; then
 
 	AC_SUBST([WARN_CXXFLAGS],
-	["-Wall -Waddress -Woverloaded-virtual -Wshadow -Wconversion"])
+	["-Waddress -Woverloaded-virtual -Wshadow -Wconversion"])
 fi
 
 ## (Option) Build In Release Mode ##
@@ -230,18 +230,22 @@ fi
 
 if test x"$release" == x"true"; then
 	if test x"$ac_cv_vp_clang" == x"true"; then
-		AC_SUBST([REL_CXXFLAGS],["-g0 -O3 -fPIC -D_FORTIFY_SOURCE=2"])
+		AC_SUBST([REL_CXXFLAGS],["-g0 -O3 -Wall -Wextra -Werror -pedantic -D_FORTIFY_SOURCE=2"])
 	else
-		AC_SUBST([REL_CXXFLAGS],["-g0 -O0 -fPIC -D_FORTIFY_SOURCE=2 --param ssp-buffer-size=4 -fstack-protector-all -fstack-check -Wstack-protector"])
+		AC_SUBST([REL_CXXFLAGS],["-g0 -O0 -Wall -Wextra -Werror -pedantic -D_FORTIFY_SOURCE=2 --param ssp-buffer-size=4 -fstack-protector-all -fstack-check -Wstack-protector"])
 	fi
 	AC_DEFINE([RELEASE], [1], [Building in Release Mode])
 fi
 
+AX_BOOST_BASE([1.53], [], AC_MSG_ERROR([Needs at least boost 1.53]))
+AX_BOOST_SYSTEM
+AX_BOOST_ASIO
+
 #####   Output to AM   #####
 
-##AC_SUBST([DEPS_CFLAGS],	[])
+AC_SUBST([DEPS_CFLAGS],	[])
 
-##AC_SUBST([DEPS_LIBS],	[])
+AC_SUBST([DEPS_LIBS],	["$BOOST_SYSTEM_LIB"])
 
 AC_SUBST([AM_CXXFLAGS],	["$DBG_CXXFLAGS $REL_CXXFLAGS $WARN_CXXFLAGS $CXX11_FLAGS $DEPS_CFLAGS"])
 
