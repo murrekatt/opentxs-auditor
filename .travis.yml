@@ -11,6 +11,8 @@ install:
   - cd ../..
 script:
   - ./scripts/travis/cppcheck_wrapper.sh ./src
+  - export BOOST_INCLUDE=/usr/include
+  - export BOOST_LIBS=/usr/lib
   - ./autogen.sh && ./configure && make && make check
 branches:
   only:
