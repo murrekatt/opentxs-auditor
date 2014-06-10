@@ -1,0 +1,9 @@
+[submodule "submodules/websocketpp"]
+	path = submodules/websocketpp
+	url = https://github.com/monetas/websocketpp.git
+[submodule "submodules/jsoncpp"]
+	path = submodules/jsoncpp
+	url = https://github.com/monetas/JsonCpp.git
+[submodule "submodules/jsonrpc-cpp"]
+	path = submodules/jsonrpc-cpp
+	url = https://github.com/monetas/JsonRpc-Cpp.git

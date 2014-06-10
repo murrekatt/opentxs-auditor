@@ -1,5 +1,3 @@
-#  
-#
 AC_PREREQ([2.61])
 AC_INIT([opentxs-auditor],m4_esyscmd(tr -d '\n' <VERSION), [info@monetas.net],[opentxs-auditor],[http://opentransactions.org])
 AC_CONFIG_SRCDIR([src/main.cpp])
@@ -10,6 +8,9 @@ AC_CONFIG_MACRO_DIR([build-aux/m4])
 
 AM_INIT_AUTOMAKE([1.10 foreign])
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([no])])
+
+## configure submodules
+#AC_CONFIG_SUBDIRS([submodules/websocketpp submodules/jsoncpp])
 
 ## special prelims
 AC_FUNC_STRNLEN
