@@ -1,0 +1,3 @@
+[submodule "submodules/websocketpp"]
+	path = submodules/websocketpp
+	url = https://github.com/monetas/websocketpp.git
