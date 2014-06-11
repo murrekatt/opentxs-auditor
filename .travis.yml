@@ -1,17 +1,14 @@
-os:
-  - linux
+os: linux
 language: cpp
 compiler:
   - gcc
-  - clang
 before_install: ./scripts/travis/install-deps.sh
 install:
   - svn checkout http://googletest.googlecode.com/svn/trunk/ gtest
-  - cd gtest && mkdir build && cd build && cmake .. && make
-  - cd ../..
+  - cd gtest && mkdir build && cd build && cmake .. && make && cd ../..
 script:
   - ./scripts/travis/cppcheck_wrapper.sh ./src
-  - export BOOST_INCLUDE=/usr/include
+  - export BOOST_INCLUDES=/usr/include
   - export BOOST_LIBS=/usr/lib
   - ./autogen.sh && ./configure && make && make check
 branches:
