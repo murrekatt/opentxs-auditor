@@ -3,12 +3,16 @@ language: cpp
 compiler:
   - gcc
 before_install: ./scripts/travis/install-deps.sh
-install: ./scripts/travis/install-gtest.sh
+install:
+  - ./scripts/travis/install-gtest.sh
+  - ./scripts/travis/install-boost.sh
 script:
   - ./scripts/travis/cppcheck_wrapper.sh ./src
-  - export BOOST_INCLUDES=/usr/include
-  - export BOOST_LIBS=/usr/lib
   - ./autogen.sh && ./configure && make && make check
+env:
+  global:
+    - BOOST_INCLUDES=/usr/local/include
+    - BOOST_LIBS=/usr/local/lib
 branches:
   only:
     - master

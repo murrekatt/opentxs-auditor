@@ -2,13 +2,17 @@
 
 set -e
 
-[ ! -d .gitmodules ] || {
-    echo "=== Updating submodules =================================="
-    git submodule init
-    git submodule update
-    echo "=== Building submodules =================================="
-    cd submodules && cd jsoncpp && scons platform=linux-gcc && cd ../jsonrpc-cpp && scons && cd ../websocketpp && scons && cd ../..
-}
+echo "=== Updating submodules =================================="
+git submodule update --init --recursive
+git submodule update --recursive
+echo "=== Building submodules =================================="
+cd submodules/jsonrpc-cpp/jsoncpp
+scons
+cd ..
+scons
+cd ../websocketpp
+scons
+cd ../..
 
 echo "=== Configuring and Building ============================="
 srcdir="$(dirname $0)"
