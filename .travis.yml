@@ -3,9 +3,7 @@ language: cpp
 compiler:
   - gcc
 before_install: ./scripts/travis/install-deps.sh
-install:
-  - svn checkout http://googletest.googlecode.com/svn/trunk/ gtest
-  - cd gtest && mkdir build && cd build && cmake .. && make && cd ../..
+install: ./scripts/travis/install-gtest.sh
 script:
   - ./scripts/travis/cppcheck_wrapper.sh ./src
   - export BOOST_INCLUDES=/usr/include
@@ -15,9 +13,3 @@ branches:
   only:
     - master
     - develop
-notifications:
-  recipients:
-    - tommy@monetas.net
-  email:
-    on_success: change
-    on_failure: always
