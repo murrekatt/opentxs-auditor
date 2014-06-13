@@ -6,7 +6,7 @@ echo "=== Updating submodules =================================="
 git submodule update --init --recursive
 git submodule update --recursive
 echo "=== Building submodules =================================="
-cd submodules/jsonrpc-cpp/jsoncpp
+cd deps/jsonrpc-cpp/jsoncpp
 scons
 cd ..
 scons
