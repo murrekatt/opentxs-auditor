@@ -1,6 +1,6 @@
-[submodule "submodules/websocketpp"]
-	path = submodules/websocketpp
+[submodule "deps/websocketpp"]
+	path = deps/websocketpp
 	url = https://github.com/monetas/websocketpp.git
-[submodule "submodules/jsonrpc-cpp"]
-	path = submodules/jsonrpc-cpp
+[submodule "deps/jsonrpc-cpp"]
+	path = deps/jsonrpc-cpp
 	url = https://github.com/monetas/JsonRpc-Cpp.git
