@@ -1,14 +1,13 @@
 os: linux
 language: cpp
-compiler:
-  - gcc
+compiler: gcc
 before_install: ./scripts/travis/install-deps.sh
-install:
-  - ./scripts/travis/install-gtest.sh
-  - ./scripts/travis/install-boost.sh
+install: ./scripts/travis/install-boost.sh
 script:
   - ./scripts/travis/cppcheck_wrapper.sh ./src
-  - ./autogen.sh && ./configure && make && make check
+  - mkdir build
+  - cd build
+  - cmake .. && make && make test
 env:
   global:
     - BOOST_INCLUDES=/usr/local/include
