@@ -2,11 +2,14 @@ cmake_minimum_required(VERSION 2.8)
 
 project(OPENTXS_AUDITOR)
 
+set (VERSION "0.0.1")
+
 #-----------------------------------------------------------------------------
 # Options for building
 
 option(OPENTXS_AUDITOR_BUILD_VERBOSE       "Verbose build output." ON)
 option(OPENTXS_AUDITOR_BUILD_TESTS         "Build the unit tests." ON)
+option(RPM                                 "Build a RPM instead of a tarball" OFF )
 
 if(OPENTXS_AUDITOR_BUILD_VERBOSE)
   set(CMAKE_VERBOSE_MAKEFILE true)
@@ -23,6 +26,7 @@ message(STATUS "Processor:       ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "Verbose:         ${OPENTXS_AUDITOR_BUILD_VERBOSE}")
 message(STATUS "Testing:         ${OPENTXS_AUDITOR_BUILD_TESTS}")
 message(STATUS "Documentation:   ${OPENTXS_AUDITOR_BUILD_DOCUMENTATION}")
+message(STATUS "Build RPM:       ${RPM}")
 
 
 #-----------------------------------------------------------------------------
@@ -125,7 +129,36 @@ endif()
 
 
 #-----------------------------------------------------------------------------
+# Get submodules
+execute_process(COMMAND git "submodule" "update" "--init" "--recursive")
 
+
+#-----------------------------------------------------------------------------
 add_subdirectory(deps)
 add_subdirectory(src)
 add_subdirectory(tests)
+
+
+############################################################################
+### Install
+INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/opentxs-auditor
+        DESTINATION bin)
+
+###Packaging
+set(CPACK_PACKAGE_VERSION ${VERSION})
+set(CPACK_PACKAGE_NAME "opentxs-auditor")
+set(CPACK_PACKAGE_RELEASE 1)
+set(CPACK_PACKAGE_CONTACT "Lucas Betschart")
+set(CPACK_PACKAGE_VENDOR "Monetas AG")
+set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}")
+
+#RPM
+if(RPM)
+  set(CPACK_GENERATOR "RPM")
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/opentxs-auditor.spec.in" "${CMAKE_CURRENT_BINARY_DIR}/opentxs-auditor.spec" @ONLY IMMEDIATE)
+  set(CPACK_RPM_USER_BINARY_SPECFILE "${CMAKE_CURRENT_BINARY_DIR}/opentxs-auditor.spec")
+endif(RPM)
+
+
+include(CPack)
