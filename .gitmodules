@@ -4,3 +4,6 @@
 [submodule "deps/jsonrpc-cpp"]
 	path = deps/jsonrpc-cpp
 	url = https://github.com/monetas/JsonRpc-Cpp.git
+[submodule "deps/gtest"]
+	path = deps/gtest
+	url = https://github.com/monetas/gtest.git
