@@ -1,6 +1,6 @@
 set(NAME opentxs-auditor)
 
-include_directories(
+include_directories(SYSTEM
   ${OPENTXS_AUDITOR_SOURCE_DIR}/deps/jsonrpc-cpp
   ${OPENTXS_AUDITOR_SOURCE_DIR}/deps/websocketpp
 )
