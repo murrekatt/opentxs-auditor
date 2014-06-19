@@ -1,8 +1,12 @@
-cmake_minimum_required(VERSION 2.8)
+# Copyright (c) Monetas AG, 2014
 
+cmake_minimum_required(VERSION 2.8)
 project(OPENTXS_AUDITOR)
 
-set (VERSION "0.0.1")
+set(VERSION_MAJOR  0)
+set(VERSION_MINOR  0)
+set(VERSION_BUGFIX 1)
+set(VERSION "0.0.1")
 
 #-----------------------------------------------------------------------------
 # Options for building
@@ -25,7 +29,6 @@ message(STATUS "Processor:       ${CMAKE_SYSTEM_PROCESSOR}")
 
 message(STATUS "Verbose:         ${OPENTXS_AUDITOR_BUILD_VERBOSE}")
 message(STATUS "Testing:         ${OPENTXS_AUDITOR_BUILD_TESTS}")
-message(STATUS "Documentation:   ${OPENTXS_AUDITOR_BUILD_DOCUMENTATION}")
 message(STATUS "Build RPM:       ${RPM}")
 
 
@@ -50,10 +53,10 @@ elseif(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
   include(CheckCXXCompilerFlag)
   CHECK_CXX_COMPILER_FLAG(-std=c++11 HAVE_STD11)
   if(HAVE_STD11)
-    if(OPENTXS_AUDITOR_DISABLE_LIBCXX)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -pendanti -Werror")
+    if (APPLE)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
     else()
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wall -Wextra -U__STRICT_ANSI__")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     endif()
   else()
     message(FATAL_ERROR "No C++11 support for Clang version. Please upgrade Clang to a version supporting C++11.")
@@ -159,6 +162,5 @@ if(RPM)
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/opentxs-auditor.spec.in" "${CMAKE_CURRENT_BINARY_DIR}/opentxs-auditor.spec" @ONLY IMMEDIATE)
   set(CPACK_RPM_USER_BINARY_SPECFILE "${CMAKE_CURRENT_BINARY_DIR}/opentxs-auditor.spec")
 endif(RPM)
-
 
 include(CPack)

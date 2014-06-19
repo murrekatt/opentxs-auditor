@@ -2,7 +2,9 @@ os: linux
 language: cpp
 compiler: gcc
 before_install: ./scripts/travis/install-deps.sh
-install: ./scripts/travis/install-boost.sh
+install:
+  - ./scripts/travis/install-boost.sh
+  - ./scripts/travis/install-opentxs.sh "${CXX}"
 script:
   - ./scripts/travis/cppcheck_wrapper.sh ./src
   - mkdir build
