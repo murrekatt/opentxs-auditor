@@ -1,19 +1,33 @@
 os: linux
 language: cpp
 compiler: gcc
-before_install: ./scripts/travis/install-deps.sh
-install:
+before_install:
+  - ./scripts/travis/install-deps.sh
   - ./scripts/travis/install-boost.sh
-  - ./scripts/travis/install-opentxs.sh "${CXX}"
+install: ./scripts/travis/install-opentxs.sh "${CXX}"
+before_script: ./scripts/travis/cppcheck_wrapper.sh ./src
 script:
-  - ./scripts/travis/cppcheck_wrapper.sh ./src
   - mkdir build
   - cd build
   - cmake .. && make && make test
+  - cd ..
 env:
   global:
     - BOOST_INCLUDES=/usr/local/include
     - BOOST_LIBS=/usr/local/lib
+before_deploy:
+  - ./scripts/travis/build_tar.sh "${TRAVIS_OS_NAME}"
+deploy:
+  provider: s3
+  access_key_id: AKIAIR7XPKSU5OIGJ5IA
+  secret_access_key:
+    secure: WJ3Zut0Hezkckkby3prZuyfsKz2v10ZjhpoHUMBhjWLfFCeQxSIVux9CP2HqhPHgtVBygZjX/Nqvkgwzq/5M7mMaerdC13O9CJGifGPgTn08v17TsnfYCMy0Ip8hEHyIiiF2TiYb4bBZTXlwK5/8MlHa+85hiHK7KcEdhf4qwDg=
+  bucket: monetas-builds
+  skip_cleanup: true
+  local-dir: s3
+  upload-dir: ${TRAVIS_REPO_SLUG}/${TRAVIS_BRANCH}
+  on:
+    branch: ${TRAVIS_BRANCH}
 branches:
   only:
     - master
