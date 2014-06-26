@@ -120,14 +120,14 @@ set(LIBRARY_OUTPUT_PATH  ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 if(OPENTXS_AUDITOR_BUILD_TESTS)
   include(CTest)
-	enable_testing()
+  enable_testing()
 
-	set(GTEST_ROOT ${OPENTXS_AUDITOR_SOURCE_DIR}/deps/gtest)
-	set(GTEST_FOUND ON)
-	set(GTEST_INCLUDE_DIRS ${GTEST_ROOT}/include)
-	set(GTEST_LIBRARIES gtest)
-	set(GTEST_MAIN_LIBRARIES gtest_main)
-	set(GTEST_BOTH_LIBRARIES ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES})
+  set(GTEST_ROOT ${OPENTXS_AUDITOR_SOURCE_DIR}/deps/gtest)
+  set(GTEST_FOUND ON)
+  set(GTEST_INCLUDE_DIRS ${GTEST_ROOT}/include)
+  set(GTEST_LIBRARIES gtest)
+  set(GTEST_MAIN_LIBRARIES gtest_main)
+  set(GTEST_BOTH_LIBRARIES ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES})
 endif()
 
 
@@ -142,12 +142,12 @@ add_subdirectory(src)
 add_subdirectory(tests)
 
 
-############################################################################
-### Install
+#-----------------------------------------------------------------------------
+# Install
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/opentxs-auditor
         DESTINATION bin)
 
-###Packaging
+# Packaging
 set(CPACK_PACKAGE_VERSION ${VERSION})
 set(CPACK_PACKAGE_NAME "opentxs-auditor")
 set(CPACK_PACKAGE_RELEASE 1)
@@ -156,7 +156,7 @@ set(CPACK_PACKAGE_VENDOR "Monetas AG")
 set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}")
 
-#RPM
+# RPM
 if(RPM)
   set(CPACK_GENERATOR "RPM")
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/opentxs-auditor.spec.in" "${CMAKE_CURRENT_BINARY_DIR}/opentxs-auditor.spec" @ONLY IMMEDIATE)
