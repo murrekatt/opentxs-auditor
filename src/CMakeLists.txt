@@ -1,4 +1,8 @@
+# Copyright (c) Monetas AG, 2014
+
 set(name opentxs-auditor)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PEDANTIC_CXX_FLAGS}")
 
 include_directories(SYSTEM
   ${OPENTXS_AUDITOR_SOURCE_DIR}/deps/jsonrpc-cpp

@@ -7,10 +7,10 @@ if [[ -z "$1" ]] ; then
 fi
 
 dir="opentxs-auditor"
-mkdir ${dir}
+mkdir -p ${dir}/bin
 
 # collect files
-cp -rf build/bin/opentxs-auditor ${dir}
+cp -rf build/bin/opentxs-auditor ${dir}/bin/
 
 # create package
 version=`cat VERSION`
