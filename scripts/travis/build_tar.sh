@@ -6,7 +6,7 @@ if [[ -z "$1" ]] ; then
     os="linux"
 fi
 
-dir="opentxs-server"
+dir="opentxs-auditor"
 mkdir ${dir}
 
 # collect files
@@ -22,3 +22,4 @@ tar -vpczf ${package} ${dir}
 
 mkdir s3
 cp ${package} s3/
+cp VERSION s3/

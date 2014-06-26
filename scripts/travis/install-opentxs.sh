@@ -22,3 +22,5 @@ echo "Downloading: ${url}"
 wget ${url}
 
 tar vzxf ${package}
+
+rm ${package}
