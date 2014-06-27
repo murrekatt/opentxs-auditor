@@ -63,7 +63,7 @@ elseif(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
   endif()
 endif()
 
-set(PEDANTIC_CXX_FLAGS "-Wall -Werror -Wno-format ${WARN_CXX_FLAGS} -Wextra -pedantic -Wno-vla")
+set(PEDANTIC_CXX_FLAGS "-Wall -Werror -Wextra -pedantic")
 
 message(STATUS "C++ Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "C++ Flags:       ${CMAKE_CXX_FLAGS}")
