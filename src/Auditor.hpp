@@ -10,11 +10,11 @@ namespace opentxs
 class Auditor
 {
 public:
-  explicit Auditor(boost::asio::io_service& ioService);
+    explicit Auditor(boost::asio::io_service& ioService);
 
 private:
-  boost::asio::io_service& ioService_;
-  BtcdWalletClient walletClient_;
+    boost::asio::io_service& ioService_;
+    BtcdWalletClient walletClient_;
 };
 
 } // namespace opentxs

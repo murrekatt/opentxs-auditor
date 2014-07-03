@@ -6,10 +6,12 @@ namespace opentxs
 
 struct WalletClient
 {
-  virtual ~WalletClient() {}
+    virtual ~WalletClient()
+    {
+    }
 
-  virtual void connect() = 0;
-  virtual void getDepositScript() = 0;
+    virtual void connect() = 0;
+    virtual void getDepositScript() = 0;
 };
 
 } // namespace opentxs

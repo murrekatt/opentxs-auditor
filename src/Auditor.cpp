@@ -4,8 +4,8 @@ namespace opentxs
 {
 
 Auditor::Auditor(boost::asio::io_service& ioService)
-  : ioService_(ioService)
-  , walletClient_(ioService_)
+    : ioService_(ioService)
+    , walletClient_(ioService_)
 {
 }
 
