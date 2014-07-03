@@ -4,13 +4,8 @@ set(name opentxs-auditor)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PEDANTIC_CXX_FLAGS}")
 
-include_directories(SYSTEM
-  ${OPENTXS_AUDITOR_SOURCE_DIR}/deps/jsonrpc-cpp
-  ${OPENTXS_AUDITOR_SOURCE_DIR}/deps/websocketpp
-)
-
 set(sources
-  BtcdWalletClient.cpp
+  wallet/WalletClient.cpp
   Auditor.cpp
   main.cpp
 )
