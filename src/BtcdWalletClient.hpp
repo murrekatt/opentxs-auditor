@@ -12,19 +12,19 @@ namespace opentxs
 class BtcdWalletClient : public WalletClient
 {
 public:
-  explicit BtcdWalletClient(boost::asio::io_service& ioService);
-  virtual ~BtcdWalletClient();
+    explicit BtcdWalletClient(boost::asio::io_service& ioService);
+    virtual ~BtcdWalletClient();
 
-  virtual void connect();
-  virtual void getDepositScript();
-
-private:
-  typedef websocketpp::client<websocketpp::config::asio_tls_client> Client;
+    virtual void connect();
+    virtual void getDepositScript();
 
 private:
-  boost::asio::io_service& ioService_;
-  boost::asio::io_service::work work_;
-  Client client_;
+    typedef websocketpp::client<websocketpp::config::asio_tls_client> Client;
+
+private:
+    boost::asio::io_service& ioService_;
+    boost::asio::io_service::work work_;
+    Client client_;
 };
 
 } // namespace opentxs
