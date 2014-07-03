@@ -1,8 +1,6 @@
 set(NAME unittests-opentxs-auditor)
 
 include_directories(
-  ${OPENTXS_AUDITOR_SOURCE_DIR}/deps/jsonrpc-cpp
-  ${OPENTXS_AUDITOR_SOURCE_DIR}/deps/websocketpp
   ${OPENTXS_AUDITOR_SOURCE_DIR}/deps/gtest/include
   ${OPENTXS_AUDITOR_SOURCE_DIR}/src
 )

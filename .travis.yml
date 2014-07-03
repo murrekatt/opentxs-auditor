@@ -1,9 +1,7 @@
 os: linux
 language: cpp
 compiler: gcc
-before_install:
-  - ./scripts/travis/install-deps.sh
-  - ./scripts/travis/install-boost.sh
+before_install: ./scripts/travis/install-deps.sh
 install: ./scripts/travis/install-opentxs.sh "${CXX}"
 before_script:
   - ./scripts/travis/cppcheck_wrapper.sh ./src
@@ -13,10 +11,6 @@ script:
   - cd build
   - cmake .. && make && make test
   - cd ..
-env:
-  global:
-    - BOOST_INCLUDES=/usr/local/include
-    - BOOST_LIBS=/usr/local/lib
 before_deploy:
   - ./scripts/travis/build_tar.sh "${TRAVIS_OS_NAME}"
 deploy:

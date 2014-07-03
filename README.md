@@ -8,10 +8,6 @@ Auditing component of the [Open-Transactions](http://opentransactions.org) Votin
 Dependencies
 ============
 
-* [Boost ASIO](http://www.boost.org) >= 1.53.0
-* [jsoncpp](https://github.com/monetas/JsonCpp)
-* [jsonrpc-cpp](https://github.com/monetas/JsonRpc-Cpp)
-* [websocketpp](https://github.com/monetas/websocketpp)
 * [Google Test](https://code.google.com/p/googletest/)
 
 References

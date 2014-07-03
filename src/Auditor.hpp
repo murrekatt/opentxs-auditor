@@ -1,8 +1,7 @@
 #ifndef __OPENTXS_AUDITOR_HPP__
 #define __OPENTXS_AUDITOR_HPP__
 
-#include "BtcdWalletClient.hpp"
-#include <boost/asio/io_service.hpp>
+#include "wallet/WalletClient.hpp"
 
 namespace opentxs
 {
@@ -10,11 +9,10 @@ namespace opentxs
 class Auditor
 {
 public:
-    explicit Auditor(boost::asio::io_service& ioService);
+    Auditor();
 
 private:
-    boost::asio::io_service& ioService_;
-    BtcdWalletClient walletClient_;
+    WalletClient walletClient_;
 };
 
 } // namespace opentxs

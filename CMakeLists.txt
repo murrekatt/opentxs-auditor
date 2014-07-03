@@ -84,10 +84,6 @@ endif()
 #-----------------------------------------------------------------------------
 # Third party libraries
 
-set(Boost_USE_STATIC_LIBS OFF)
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_COMPONENTS system random)
-find_package(Boost 1.53 REQUIRED ${Boost_COMPONENTS})
 find_package(OpenSSL REQUIRED)
 
 
