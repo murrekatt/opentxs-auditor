@@ -2,3 +2,5 @@ build
 opentxs
 
 .DS_Store
+CMakeLists.txt.user
+.directory
